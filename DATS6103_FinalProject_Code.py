@@ -13,7 +13,7 @@ from scipy import stats
 
 #%%
 # Read in the dataset: 
-stroke_orig = pd.read_csv('healthcare-dataset-stroke-data.csv')
+stroke_orig = pd.read_csv('healthcare-dataset-stroke-data.csv', na_values='N/A')
 stroke = stroke_orig
 
 #%%[markdown]
@@ -45,12 +45,37 @@ stroke.tail()
 '''We first want to check whether there any N/A values in our data,'''
 
 #%%
+# Checking for N/A Values
 if True in stroke.isna(): 
     print('There are N/A values in the dataset')
 else:
     print('No N/A values in our dataset!')
 
-# We also need to address outliers somewhere
+#%%
+# Checking for duplicate records
+if True in stroke.duplicated():
+    print('There are duplicate rows')
+else:
+    print('There are no duplicate rows')
+
+#%%
+# Checking for outliers
+outliercols = ['age', 'avg_glucose_level', 'bmi']
+
+for col in outliercols:
+    Q1 = stroke[col].quantile(0.25)
+    Q3 = stroke[col].quantile(0.75)
+    IQR = Q3 - Q1
+    threshold = 1.5
+    outliers = stroke[(stroke[col] < Q1 - threshold * IQR) | (stroke[col] > Q3 + threshold * IQR)]
+    if len(outliers) > 0:
+        print('There were outliers in', col, 'column')
+        print('We will drop the outliers')
+        stroke = stroke.drop(outliers.index)
+        stroke.info()
+    else:
+        print('No outliers in', col, 'column')
+stroke.info()
 
 #%%
 # Just checking to see how many data points we have for those had and did not have strokes:
