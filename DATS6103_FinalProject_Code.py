@@ -185,8 +185,27 @@ plt.show()
 # Hypothesis testing
 
 #%%
-# SMART Question 1: What is the impact of lifestyle choices, particularly BMI and smoking status, on the probability of having a stroke? Are there significant differences among different groups? 
-# Evaluate the relationship between lifestyle factors (BMI, smoking status) and stroke occurrences, considering variations across different groups like gender, age, or residential areas.
+# SMART Question 1: What is the impact of lifestyle choices, particularly BMI and 
+# smoking status, on the probability of having a stroke? Are there significant differences 
+# among different groups? 
+# Evaluate the relationship between lifestyle factors (BMI, smoking status) and stroke occurrences, 
+# considering variations across different groups like gender, age, or residential areas.
+
+'''Since BMI is a numerical variable, while status of stroke is categorical, (and the population standard
+deviation of BMI is unknown) we can conduct a t test (as opposed to a z test).'''
+
+# Null hypothesis, alternative hypothesis, assumptions
+
+bmi_stroke0 = (stroke['bmi'])[stroke.stroke == 0]
+bmi_stroke1 = (stroke['bmi'])[stroke.stroke == 1]
+
+t_stat, p_value = stats.ttest_ind(a=bmi_stroke0, b=bmi_stroke1, equal_var=True)
+print('Our t test statistic is', t_stat, 'with p-value', p_value) # Still getting nan values; we have not addressed the N/A values
+
+'''In a similar vein, because stroke and smoking status are both categorical variables, we can conduct
+a chi square test to determine whether the two variables are associated with each other.
+
+First, we need to create a contingency table.'''
 
 #%%
 # SMART Question 2: How do the levels of hypertension and heart disease individually, or in combination, impact the probability of stroke among different work types? 
