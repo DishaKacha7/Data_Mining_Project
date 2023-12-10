@@ -10,6 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
+from sklearn.preprocessing import LabelEncoder
 
 #%%
 # Read in the dataset: 
@@ -218,3 +219,77 @@ First, we need to create a contingency table.'''
 #%%
 # SMART Question 4: Is there a significant correlation between marital status, gender, and age in this analysis? 
 # Analyze marital status data to identify patterns within specific age groups among the married, and assess gender-based stroke frequency differences. 
+
+le = LabelEncoder()
+stroke['ever_married_encoded'] = le.fit_transform(stroke['ever_married'])
+stroke['gender_encoded'] = le.fit_transform(stroke['gender'])
+
+plt.figure(figsize=(10, 8))
+correlation_matrix = stroke[['age', 'stroke', 'ever_married_encoded', 'gender_encoded']].corr()
+print(correlation_matrix)
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", vmin=-1, vmax=1)
+plt.title('Correlation Matrix: Age and Stroke')
+plt.show()
+
+print('''Age and Stroke (0.245257):
+
+There is a positive correlation of approximately 0.25 between age and stroke.
+This suggests that, on average, as age increases, the likelihood of having a stroke also tends to increase. However, the correlation is not extremely strong.
+
+       
+Ever Married and Stroke (0.108340):
+
+There is a positive correlation of approximately 0.11 between ever_married_encoded and stroke.
+This suggests a weak positive relationship between being ever married and the likelihood of having a stroke. 
+
+Gender and Stroke (0.008929):
+
+There is a very weak positive correlation of approximately 0.009 between gender_encoded and stroke.
+This suggests a minimal relationship between gender and the likelihood of having a stroke.           
+''')
+# %%
+
+age_bins = [0, 18, 35, 50, 65, 100]
+age_labels = ['0-18', '19-35', '36-50', '51-65', '66-100']
+
+# Add a new column 'age_group' to the DataFrame
+stroke['age_group'] = pd.cut(stroke['age'], bins=age_bins, labels=age_labels, right=False)
+
+# Filter the DataFrame for married individuals
+married_df = stroke[stroke['ever_married'] == 'Yes']
+
+# Create a cross-tabulation (crosstab) between age groups, marital status, and stroke
+married_age_stroke = pd.crosstab([married_df['age_group'], married_df['stroke']], married_df['ever_married'])
+print(married_age_stroke)
+# Plot the bar chart
+married_age_stroke.unstack().plot(kind='bar', stacked=True, color=['green', 'red'], figsize=(10, 6))
+plt.title('Age Distribution within Married Group with Stroke')
+plt.xlabel('Age Group and Stroke')
+plt.ylabel('Count')
+plt.show()
+
+
+print('''Age Group 19-35:
+
+Individuals in this age group who are ever married have a low incidence of strokes (1 case).
+The majority (374 cases) of individuals in this age group who are ever married do not have strokes.
+
+
+Age Group 36-50:
+
+There is a slightly higher incidence of strokes in this age group (12 cases) compared to the 19-35 age group.
+The majority (803 cases) of individuals in this age group who are ever married do not have strokes.
+
+      
+Age Group 51-65:
+
+The incidence of strokes increases in this age group (43 cases), indicating a higher risk compared to the younger age groups.
+The majority (824 cases) of individuals in this age group who are ever married do not have strokes.
+
+      
+Age Group 66-100:
+
+This age group has the highest incidence of strokes (85 cases) among individuals who are ever married.
+The majority (593 cases) of individuals in this age group who are ever married do not have strokes.
+''')
+# %%
