@@ -47,10 +47,12 @@ stroke.tail()
 
 #%%
 # Checking for N/A Values
-if True in stroke.isna(): 
-    print('There are N/A values in the dataset')
-else:
-    print('No N/A values in our dataset!')
+# if True in stroke.isna(): 
+#     print('There are N/A values in the dataset')
+# else:
+#     print('No N/A values in our dataset!')
+stroke.dropna(how = 'any')
+print(stroke.isna().sum())
 
 #%%
 # Checking for duplicate records
@@ -292,4 +294,20 @@ Age Group 66-100:
 This age group has the highest incidence of strokes (85 cases) among individuals who are ever married.
 The majority (593 cases) of individuals in this age group who are ever married do not have strokes.
 ''')
-# %%
+#%%[markdown]
+'''-----------------------------------------------------------------------------------------'''
+
+#%%[markdown]
+'''Modeling Section'''
+
+#%%
+# Decision tree classifier - Nema
+
+#%%
+# Logistic regression - Devarsh
+
+#%%
+# SVC - Disha
+
+#%%
+# Random Forest - Abhradeep
