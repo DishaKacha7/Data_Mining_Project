@@ -24,6 +24,7 @@ from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
+from sklearn import tree
 #%%
 # Read in the dataset: 
 # stroke_orig = pd.read_csv('/Users/dishakacha/Downloads/healthcare-dataset-stroke-data.csv', na_values='N/A')
@@ -544,8 +545,16 @@ clf = DecisionTreeClassifier()
 clf = clf.fit(X_train,y_train)
 y_pred = clf.predict(X_test)
 
-# Model Accuracy, how often is the classifier correct?
+# Model Accuracy
 print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+#%%
+# Plotting the tree
+fig = plt.figure(figsize=(25,20))
+_ = tree.plot_tree(clf, 
+                   feature_names=stroke.columns != 'stroke',  
+                   class_names='stroke',
+                   filled=True)
 
 #%%
 # Logistic regression - Devarsh
@@ -601,6 +610,7 @@ plt.figure(figsize=(8, 6))
 plot_confusion_matrix(lr, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
 plt.title('Confusion Matrix')
 plt.show()
+
 #%%
 # SVC - Disha
 parameters = {
