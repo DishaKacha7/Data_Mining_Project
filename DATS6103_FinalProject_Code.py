@@ -13,7 +13,7 @@ from scipy import stats
 from sklearn.preprocessing import LabelEncoder
 import warnings
 from datetime import datetime
-
+from scipy.stats import chi2_contingency
 ################### Sklearn ####################################
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
@@ -272,6 +272,23 @@ plt.title('Occupation and Smoking Status Distribution for Stroke=1')
 
 # Adding another categorical variable using hue
 plt.show()
+
+#%%
+# Create a contingency table
+contingency_table = pd.crosstab(stroke['work_type'], stroke['stroke'])
+
+# Perform chi-squared test
+chi2, p, _, _ = chi2_contingency(contingency_table)
+
+print("Chi-squared:", chi2)
+print("P-value:", p)
+
+print("""The chi-squared statistic being significantly different from zero suggests that there is a notable discrepancy between the observed distribution of stroke cases across different work types and the distribution expected under the assumption of independence.
+The small p-value (close to zero) suggests strong evidence against the null hypothesis, indicating that there is a significant association between work type and the occurrence of stroke.""")
+
+print("""The small p-value (close to zero) suggests strong evidence against the null hypothesis, indicating that there is a significant association between work type and the occurrence of stroke.""")
+
+print("""The results provide statistical support for the hypothesis that work type and stroke are associated in the dataset. In practical terms, it implies that the distribution of stroke cases is not uniform across different work types, and there may be a relationship between the two variables.""")
 #%%
 # SMART Question 4: Is there a significant correlation between marital status, gender, and age in this analysis? 
 # Analyze marital status data to identify patterns within specific age groups among the married, and assess gender-based stroke frequency differences. 
