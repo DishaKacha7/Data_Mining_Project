@@ -277,7 +277,7 @@ First, we need to create a contingency table.'''
 
 #%%
 # EDA Plot for second part of SMART Q1
-sns.set(style="whitegrid")
+# sns.set(style="whitegrid")
 plt.figure(figsize=(10, 6))
 sns.countplot(x='smoking_status', hue='stroke', data=stroke)
 plt.xlabel('Smoking Status')
@@ -617,23 +617,55 @@ print(X.describe())
 # Decision tree classifier - Nema
 X = stroke.loc[:, stroke.columns != 'stroke']
 y = stroke['stroke']
-
-X_train, X_test, y_train, y_test = train_test_split(X_temp, y, test_size=0.2, random_state=1) # 80-20 split
-
+X_train, X_test, y_train, y_test = train_test_split(X_temp, y, test_size=0.2, random_state=1)
 clf = DecisionTreeClassifier()
-clf = clf.fit(X_train,y_train)
-y_pred = clf.predict(X_test)
-
+#%%
+param_grid = {
+    'criterion': ['gini', 'entropy'],
+    'max_depth': [None, 10, 20, 30],
+    'min_samples_split': [2, 5, 10, 50, 100],
+    'min_samples_leaf': [1, 2, 4, 10, 25]
+}
+#%%
+grid_search = GridSearchCV(clf, param_grid, cv=10, scoring='accuracy')
+grid_search.fit(X_train, y_train)
+best_clf = grid_search.best_estimator_
+y_pred = best_clf.predict(X_test)
+#%%
 # Model Accuracy
-print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
-
+print("Accuracy:", metrics.accuracy_score(y_test, y_pred))
 #%%
 # Plotting the tree
-fig = plt.figure(figsize=(25,20))
-_ = tree.plot_tree(clf, 
-                   feature_names=stroke.columns != 'stroke',  
-                   class_names='stroke',
+fig = plt.figure(figsize=(25, 20))
+_ = tree.plot_tree(best_clf, 
+                   feature_names=stroke.columns[:-1],  # Exclude the target column
+                   class_names=['No Stroke', 'Stroke'],  # Assuming binary classification
                    filled=True)
+plt.show()
+#%%
+# Print the best parameters found by GridSearchCV
+print("Best Parameters:", grid_search.best_params_)
+
+t1 = datetime.now()
+dt = DecisionTreeClassifier(**grid_search.best_params_).fit(X_train, y_train)
+t2 = datetime.now()
+y_pred_dt = dt.predict(X_test)
+dt_score = round(dt.score(X_test, y_test), 3)
+print('DecisionTree score : ', dt_score)
+cr = metrics.classification_report(y_test, y_pred_dt)
+print(cr)
+delta = t2-t1
+delta_dt = round(delta.total_seconds(), 3)
+print('DecisionTree takes : ', delta_dt, 'Seconds')
+
+#%%
+cm = confusion_matrix(y_test, y_pred_dt)
+print(cm)
+# Plotting the confusion matrix
+plt.figure(figsize=(8, 6))
+plot_confusion_matrix(dt, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
+plt.title('Confusion Matrix')
+plt.show()
 
 #%%
 # Logistic regression - Devarsh
