@@ -612,7 +612,7 @@ svc = SVC()
 svc_cv = GridSearchCV(estimator=svc, param_grid=parameters, cv=10).fit(X_train, y_train)
 
 print('Tuned hyper parameters : ', svc_cv.best_params_)
-print('accuracy : ', svc_cv.best_score_)
+print('Accuracy : ', svc_cv.best_score_)
 
 # Calculate time befor run algorithm
 t1 = datetime.now()
@@ -636,9 +636,14 @@ cr = metrics.classification_report(y_test, y_pred_svc)
 print(cr)
 
 cm = confusion_matrix(y_test, y_pred_svc)
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Dont Had Stroke', 'Had Stroke'])
-disp.plot(cmap='Greens', values_format='')
-disp.ax_.set_title('Confusion Matrix')
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Dont Have Stroke', 'Have Stroke'])
+
+# Adjust layout for better visibility
+fig, ax = plt.subplots(figsize=(8, 6))
+disp.plot(cmap='Greens', values_format='', ax=ax)
+ax.set_title('Confusion Matrix')
+
+plt.tight_layout()
 plt.show()
 #%%
 # Random Forest - Abhradeep
