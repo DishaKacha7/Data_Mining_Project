@@ -14,6 +14,8 @@ from sklearn.preprocessing import LabelEncoder
 import warnings
 from datetime import datetime
 from scipy.stats import chi2_contingency
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 ################### Sklearn ####################################
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
@@ -493,7 +495,52 @@ print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
 
 #%%
 # Logistic regression - Devarsh
+parameters = {
+    'C' : [0.001, 0.01, 0.1, 1.0, 10, 100, 1000],
+    'class_weight' : ['balanced'],
+    'solver' : ['lbfgs', 'liblinear', 'newton-cg', 'newton-cholesky', 'sag', 'saga']
+}
 
+lr = LogisticRegression()
+lr_cv = GridSearchCV(estimator=lr, param_grid=parameters, cv=10).fit(X_train, y_train)
+
+print('Tuned hyper parameters : ', lr_cv.best_params_)
+print('accuracy : ', lr_cv.best_score_)
+
+#%%
+lr = LogisticRegression(**lr_cv.best_params_).fit(X_train, y_train)
+y_pred_lr = lr.predict(X_test)
+cr = metrics.classification_report(y_test, y_pred_lr)
+print(cr)
+
+
+print('''Precision:
+Precision for class 0: 0.98 (high)
+Precision for class 1: 0.06 (low)
+Precision is the ratio of correctly predicted positive observations to the total predicted positives. In this context, it represents the accuracy of the model in predicting strokes for each class.
+
+Recall (Sensitivity):
+Recall for class 0: 0.68 (moderate)
+Recall for class 1: 0.61 (moderate)
+Recall is the ratio of correctly predicted positive observations to the all observations in the actual class. In this context, it represents the ability of the model to capture all instances of strokes for each class.
+
+F1-Score:
+F1-Score for class 0: 0.80 (harmonic mean of precision and recall)
+F1-Score for class 1: 0.11 (harmonic mean of precision and recall)
+The F1-Score is the weighted average of precision and recall. It is a useful metric when there is an uneven class distribution.
+
+Accuracy:
+Overall accuracy: 0.67 (moderate)
+Accuracy is the ratio of correctly predicted observations to the total observations.''')
+
+#%%
+cm = confusion_matrix(y_test, y_pred_lr)
+print(cm)
+# Plotting the confusion matrix
+plt.figure(figsize=(8, 6))
+plot_confusion_matrix(lr, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
+plt.title('Confusion Matrix')
+plt.show()
 #%%
 # SVC - Disha
 
