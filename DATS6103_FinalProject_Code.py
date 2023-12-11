@@ -11,7 +11,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
 from sklearn.preprocessing import LabelEncoder
+import warnings
+from datetime import datetime
 
+################### Sklearn ####################################
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import metrics
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 #%%
 # Read in the dataset: 
 stroke_orig = pd.read_csv('healthcare-dataset-stroke-data.csv', na_values='N/A')
@@ -51,7 +61,7 @@ stroke.tail()
 #     print('There are N/A values in the dataset')
 # else:
 #     print('No N/A values in our dataset!')
-stroke.dropna(how = 'any')
+stroke.dropna(inplace = True)
 print(stroke.isna().sum())
 
 #%%
@@ -297,6 +307,58 @@ The majority (593 cases) of individuals in this age group who are ever married d
 #%%[markdown]
 '''-----------------------------------------------------------------------------------------'''
 
+#%%[markdown]
+'''Unique Values and Categorical changes and Normalization'''
+#%%
+columns_temp = ['gender', 'ever_married', 'work_type', 'smoking_status', 'Residence_type']
+
+for col in columns_temp :
+    print('column :', col)
+    for index, unique in enumerate(stroke[col].unique()) :
+        print(unique, ':', index)
+    print('_'*45)
+
+# gender
+stroke_numerical = stroke.replace(
+    {'gender' : {'Male' : 0, 'Female' : 1, 'Other' : 2}}
+)
+
+# ever_married
+stroke_numerical =  stroke_numerical.replace(
+    {'ever_married' : {'Yes' : 0, 'No' : 1}}
+)
+
+# work_type
+stroke_numerical =  stroke_numerical.replace(
+    {'work_type' : {'Private' : 0, 'Self-employed' : 1, 'Govt_job' : 2, 'children' : 3, 'Never_worked' : 4}}
+)
+
+# smoking_status
+stroke_numerical =  stroke_numerical.replace(
+    {'smoking_status' : {'formerly smoked' : 0, 'never smoked' : 1, 'smokes' : 2, 'Unknown' : 3}}
+)
+
+# Residence_type
+stroke_numerical =  stroke_numerical.replace(
+    {'Residence_type' : {'Urban' : 0, 'Rural' : 1}}
+)
+
+stroke_numerical.head()
+
+#%%
+numerical_columns = ['age', 'hypertension', 'heart_disease', 'avg_glucose_level', 'bmi']
+
+X_temp = stroke_numerical[numerical_columns]
+y = stroke_numerical['stroke']
+
+#%%
+scaler = MinMaxScaler()
+X_scaled = pd.DataFrame(scaler.fit_transform(X_temp), columns=numerical_columns)
+
+# Concatenate the scaled numerical features with the encoded categorical features
+X = pd.concat([X_scaled, stroke_numerical.drop(columns=numerical_columns + ['stroke'])], axis=1)
+
+print(X.describe())
 #%%[markdown]
 '''Modeling Section'''
 
