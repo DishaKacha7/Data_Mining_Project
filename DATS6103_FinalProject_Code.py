@@ -335,6 +335,85 @@ print(conclusion)
 # SMART Question 2: How do the levels of hypertension and heart disease individually, or in combination, impact the probability of stroke among different work types? 
 # Investigate the relationship between hypertension, heart disease, and their interaction among various work types to discern if certain professions are more susceptible to strokes due to these health factors. 
 
+# Step 1: We are creating a new variable representing the combination of hypertension and heart disease
+
+stroke['hypertension_heart_disease_interaction'] = 0  # 0 for no condition
+
+# Set values for specific conditions
+stroke.loc[(stroke['hypertension'] == 1) & (stroke['heart_disease'] == 0), 'hypertension_heart_disease_interaction'] = 1  # 1 for hypertension only
+stroke.loc[(stroke['hypertension'] == 0) & (stroke['heart_disease'] == 1), 'hypertension_heart_disease_interaction'] = 2  # 2 for heart disease only
+stroke.loc[(stroke['hypertension'] == 1) & (stroke['heart_disease'] == 1), 'hypertension_heart_disease_interaction'] = 3  # 3 for both conditions
+
+# Printing the DataFrame to check the new variable
+print(stroke[['hypertension', 'heart_disease', 'hypertension_heart_disease_interaction']])
+
+#%%
+grouped_by_work_type = stroke.groupby('work_type')
+grouped_by_work_type
+descriptive_stats = grouped_by_work_type[['hypertension_heart_disease_interaction', 'stroke']].mean()
+print(descriptive_stats)
+
+custom_palette = sns.color_palette("Set2")
+
+sns.set_style("darkgrid")
+
+plt.figure(figsize=(12, 8))
+ax = sns.barplot(
+    x='work_type',
+    y='stroke',
+    hue='hypertension_heart_disease_interaction',
+    data=stroke,
+    palette=custom_palette
+)
+
+plt.title("Stroke Probability by Work Type and Hypertension-Heart Disease Interaction")
+plt.xlabel("Work Type")
+plt.ylabel("Probability of Stroke")
+plt.legend(title="Hypertension-Heart Disease Interaction")
+plt.tight_layout()
+plt.show()
+
+from scipy.stats import chi2_contingency
+
+work_types = stroke['work_type'].unique()
+
+for work_type in work_types:
+    contingency_table = pd.crosstab(
+        index=stroke[(stroke['work_type'] == work_type)]['hypertension_heart_disease_interaction'],
+        columns=stroke[(stroke['work_type'] == work_type)]['stroke'],
+        margins=False
+    )
+
+    print(f"\nWork Type: {work_type}")
+    print("Contingency Table:")
+    print(contingency_table)
+
+    chi2, p, _, _ = chi2_contingency(contingency_table)
+
+    print(f"\nChi-Squared Value: {chi2}")
+    print(f"P-Value: {p}")
+
+    # Visualization
+    custom_palette = sns.color_palette("Set2")
+    sns.set_style("darkgrid")
+    plt.figure(figsize=(8, 6))
+    ax = sns.barplot(
+    x='hypertension_heart_disease_interaction',
+    y='stroke',
+    data=stroke[stroke['work_type'] == work_type],
+    palette=custom_palette
+)
+    plt.title(f'Stroke Probability by Hypertension-Heart Disease Interaction in {work_type} Work Type')
+    plt.xlabel('Hypertension-Heart Disease Interaction')
+    plt.ylabel('Probability of Stroke')
+    plt.tight_layout()
+    plt.show()
+
+    # You can then interpret the p-value to determine significance
+    if p < 0.05:
+        print("There is a significant association.")
+    else:
+        print("There is no significant association.")
 #%%
 # SMART Question 3: Is it possible to assess the influence of residence type, occupation, and smoking habits on stroke frequency? 
 # Evaluate the potential influence of smoking patterns and occupation on stroke risk among urban and rural residents. 
