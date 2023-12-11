@@ -479,6 +479,17 @@ print(X.describe())
 
 #%%
 # Decision tree classifier - Nema
+X = stroke.loc[:, stroke.columns != 'stroke']
+y = stroke['stroke']
+
+X_train, X_test, y_train, y_test = train_test_split(X_temp, y, test_size=0.2, random_state=1) # 80-20 split
+
+clf = DecisionTreeClassifier()
+clf = clf.fit(X_train,y_train)
+y_pred = clf.predict(X_test)
+
+# Model Accuracy, how often is the classifier correct?
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
 
 #%%
 # Logistic regression - Devarsh
