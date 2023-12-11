@@ -24,7 +24,7 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 #%%
 # Read in the dataset: 
-stroke_orig = pd.read_csv('healthcare-dataset-stroke-data.csv', na_values='N/A')
+stroke_orig = pd.read_csv('/Users/dishakacha/Downloads/healthcare-dataset-stroke-data.csv', na_values='N/A')
 stroke = stroke_orig
 
 #%%[markdown]
@@ -228,6 +228,50 @@ First, we need to create a contingency table.'''
 # SMART Question 3: Is it possible to assess the influence of residence type, occupation, and smoking habits on stroke frequency? 
 # Evaluate the potential influence of smoking patterns and occupation on stroke risk among urban and rural residents. 
 
+stroke_1 = stroke[stroke['stroke'] == 1]
+
+# Countplot for smoking status and occupation distribution for stroke=1
+plt.figure(figsize=(15, 5))
+
+plt.subplot(1, 2, 1)
+sns.countplot(x='smoking_status', hue='work_type', data=stroke_1)
+plt.title('Smoking Status and Occupation Distribution')
+plt.legend(title='Work Type')
+
+# Pie chart for the distribution of smoking status for stroke=1
+plt.subplot(1, 2, 2)
+smoking_status_counts = stroke_1['smoking_status'].value_counts()
+plt.pie(smoking_status_counts, labels=smoking_status_counts.index, autopct='%1.1f%%', startangle=90)
+plt.title('Smoking Status Distribution')
+
+plt.show()
+
+# Countplot for residence type and occupation distribution for stroke=1
+plt.figure(figsize=(15, 5))
+
+plt.subplot(1, 2, 1)
+sns.countplot(x='Residence_type', hue='work_type', data=stroke_1)
+plt.title('Residence Type and Occupation Distribution for Stroke=1')
+plt.legend(title='Work Type')
+
+# Pie chart for the distribution of residence type for stroke=1
+plt.subplot(1, 2, 2)
+residence_type_counts = stroke_1['Residence_type'].value_counts()
+plt.pie(residence_type_counts, labels=residence_type_counts.index, autopct='%1.1f%%', startangle=90)
+plt.title('Residence Type Distribution for Stroke=1')
+
+plt.show()
+
+# Adding another categorical variable using hue
+plt.show()
+
+plt.figure(figsize=(15, 7))
+
+sns.countplot(x='work_type', hue='smoking_status', data=stroke_1, palette='viridis')
+plt.title('Occupation and Smoking Status Distribution for Stroke=1')
+
+# Adding another categorical variable using hue
+plt.show()
 #%%
 # SMART Question 4: Is there a significant correlation between marital status, gender, and age in this analysis? 
 # Analyze marital status data to identify patterns within specific age groups among the married, and assess gender-based stroke frequency differences. 
