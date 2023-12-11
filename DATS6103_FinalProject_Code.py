@@ -201,6 +201,9 @@ plt.show()
 # Hypothesis testing
 
 #%%
+# plot color palette
+deep_palette = sns.color_palette("deep")
+#%%
 # SMART Question 1: What is the impact of lifestyle choices, particularly BMI and 
 # smoking status, on the probability of having a stroke? Are there significant differences 
 # among different groups? 
@@ -210,13 +213,36 @@ plt.show()
 #%%[markdown]
 '''We first visualize the distribution of BMI based on whether a person had a stroke or not.'''
 
+# #%%
+# bmi_stroke0 = (stroke['bmi'])[stroke.stroke == 0]
+# plt.hist(bmi_stroke0, alpha=.5)
+# plt.title('Distribution of Body Mass Index for Individuals Without a Stroke')
+# plt.legend()
+# plt.show()
+
+# #%%
+# bmi_stroke1 = (stroke['bmi'])[stroke.stroke == 1]
+# plt.hist(bmi_stroke1, alpha=.5, color=deep_palette[1])
+# plt.title('Distribution of Body Mass Index Who Have Had a Stroke')
+# plt.legend()
+# plt.show()
+
 #%%
-bmi_stroke0 = (stroke['bmi'])[stroke.stroke == 0]
-bmi_stroke1 = (stroke['bmi'])[stroke.stroke == 1]
-plt.hist(bmi_stroke0, alpha=.5, label='No Stroke')
-plt.hist(bmi_stroke1, alpha=.5, label='Stroke')
-plt.title('Distribution of Body Mass Index Based on Stroke Status')
+plt.figure(figsize=(10, 6))
+sns.kdeplot(bmi_stroke0, label='No Stroke', fill=True, alpha=0.5)
+sns.kdeplot(bmi_stroke1, label='Stroke', fill=True, alpha=0.5)
+plt.xlabel('Body Mass Index (BMI)')
+plt.ylabel('Density')
+plt.title('Density Plot of Body Mass Index Based on Stroke Status')
+plt.legend()
 plt.show()
+
+# plt.figure(figsize=(10, 6))
+# sns.violinplot(x='stroke', y='bmi', data=stroke, inner='quartile', palette='muted')
+# plt.xlabel('Stroke Status')
+# plt.ylabel('Body Mass Index (BMI)')
+# plt.title('Violin Plot of Body Mass Index Based on Stroke Status')
+# plt.show()
 
 #%%[markdown]
 '''Since BMI is a numerical variable, while status of stroke is categorical, (and the population standard
@@ -224,7 +250,8 @@ deviation of BMI is unknown) we can conduct a t test (as opposed to a z test).''
 
 #%%
 # Null hypothesis, alternative hypothesis, assumptions
-
+print('average BMI for stroke0:', np.average(bmi_stroke0))
+print('average BMI for stroke1:', np.average(bmi_stroke1))
 t_stat, p_value = stats.ttest_ind(a=bmi_stroke0, b=bmi_stroke1, equal_var=True)
 print('Our t test statistic is', t_stat, 'with p-value', p_value) # Still getting nan values; we have not addressed the N/A values
 
@@ -246,6 +273,30 @@ print(conclusion)
 a chi square test to determine whether the two variables are associated with each other.
 # Null hypothesis alternative hypothesis, assumptions
 First, we need to create a contingency table.'''
+
+#%%
+# EDA Plot for second part of SMART Q1
+sns.set(style="whitegrid")
+plt.figure(figsize=(10, 6))
+sns.countplot(x='smoking_status', hue='stroke', data=stroke)
+plt.xlabel('Smoking Status')
+plt.ylabel('Count')
+plt.title('Bar Plot of Stroke Status by Smoking Status')
+plt.legend(title='Stroke Status', loc='upper right')
+plt.show()
+
+#%%
+stroke0 = stroke[stroke['stroke'] == 0]
+stroke1 = stroke[stroke['stroke'] == 1]
+fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+smokecounts_stroke0 = stroke0['smoking_status'].value_counts(normalize=True)
+axes[0].pie(smokecounts_stroke0, labels=smokecounts_stroke0.index, autopct="%.1f%%", startangle=90)
+axes[0].set_title('Distribution of Smoking Status (No Stroke)')
+smokecounts_stroke1 = stroke1['smoking_status'].value_counts(normalize=True)
+axes[1].pie(smokecounts_stroke1, labels=smokecounts_stroke1.index, autopct="%.1f%%", startangle=90)
+axes[1].set_title('Distribution of Smoking Status (Stroke)')
+plt.tight_layout()
+plt.show()
 
 #%%
 # smoking_status: "formerly smoked", "never smoked", "smokes" or "Unknown"
@@ -275,6 +326,9 @@ else:
     status of smoking and whether an individual has a stroke or not are not associated with one another.'''
 #%%
 print(conclusion)
+
+#%%[markdown]
+'''-----------------------------------------------------------------------------------------'''
 
 #%%
 # SMART Question 2: How do the levels of hypertension and heart disease individually, or in combination, impact the probability of stroke among different work types? 
@@ -543,6 +597,42 @@ plt.title('Confusion Matrix')
 plt.show()
 #%%
 # SVC - Disha
+parameters = {
+    'C' : [0.001, 0.01, 0.1, 1.0, 10, 100, 1000],
+    'gamma' : [0.001, 0.01, 0.1, 1.0, 10, 100, 1000],
+}
 
+svc = SVC()
+svc_cv = GridSearchCV(estimator=svc, param_grid=parameters, cv=10).fit(X_train, y_train)
+
+print('Tuned hyper parameters : ', svc_cv.best_params_)
+print('accuracy : ', svc_cv.best_score_)
+
+# Calculate time befor run algorithm
+t1 = datetime.now()
+# Model
+svc = SVC(**svc_cv.best_params_).fit(X_train, y_train)
+# Calculate time after run algorithm
+t2 = datetime.now()
+
+y_pred_svc = svc.predict(X_test)
+
+svc_score = round(svc.score(X_test, y_test), 3)
+print('SVC Score : ', svc_score)
+
+delta = t2-t1
+delta_svc = round(delta.total_seconds(), 3)
+print('SVC : ', delta_svc, 'Seconds')
+
+metrics.pair_confusion_matrix(y_test, y_pred_svc)
+
+cr = metrics.classification_report(y_test, y_pred_svc)
+print(cr)
+
+cm = confusion_matrix(y_test, y_pred_svc)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Dont Had Stroke', 'Had Stroke'])
+disp.plot(cmap='Greens', values_format='')
+disp.ax_.set_title('Confusion Matrix')
+plt.show()
 #%%
 # Random Forest - Abhradeep
