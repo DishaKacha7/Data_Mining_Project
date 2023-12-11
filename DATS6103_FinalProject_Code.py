@@ -214,14 +214,14 @@ deep_palette = sns.color_palette("deep")
 '''We first visualize the distribution of BMI based on whether a person had a stroke or not.'''
 
 # #%%
-# bmi_stroke0 = (stroke['bmi'])[stroke.stroke == 0]
+bmi_stroke0 = (stroke['bmi'])[stroke.stroke == 0]
 # plt.hist(bmi_stroke0, alpha=.5)
 # plt.title('Distribution of Body Mass Index for Individuals Without a Stroke')
 # plt.legend()
 # plt.show()
 
 # #%%
-# bmi_stroke1 = (stroke['bmi'])[stroke.stroke == 1]
+bmi_stroke1 = (stroke['bmi'])[stroke.stroke == 1]
 # plt.hist(bmi_stroke1, alpha=.5, color=deep_palette[1])
 # plt.title('Distribution of Body Mass Index Who Have Had a Stroke')
 # plt.legend()
