@@ -562,11 +562,17 @@ print('Tuned hyper parameters : ', lr_cv.best_params_)
 print('accuracy : ', lr_cv.best_score_)
 
 #%%
+t1 = datetime.now()
 lr = LogisticRegression(**lr_cv.best_params_).fit(X_train, y_train)
+t2 = datetime.now()
 y_pred_lr = lr.predict(X_test)
+lr_score = round(lr.score(X_test, y_test), 3)
+print('LogisticRegression score : ', lr_score)
 cr = metrics.classification_report(y_test, y_pred_lr)
 print(cr)
-
+delta = t2-t1
+delta_lr = round(delta.total_seconds(), 3)
+print('LogisticRegression takes : ', delta_lr, 'Seconds')
 
 print('''Precision:
 Precision for class 0: 0.98 (high)
