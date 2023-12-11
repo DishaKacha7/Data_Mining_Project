@@ -24,7 +24,8 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 #%%
 # Read in the dataset: 
-stroke_orig = pd.read_csv('/Users/dishakacha/Downloads/healthcare-dataset-stroke-data.csv', na_values='N/A')
+# stroke_orig = pd.read_csv('/Users/dishakacha/Downloads/healthcare-dataset-stroke-data.csv', na_values='N/A')
+stroke_orig = pd.read_csv('healthcare-dataset-stroke-data.csv', na_values='N/A')
 stroke = stroke_orig
 
 #%%[markdown]
@@ -204,21 +205,74 @@ plt.show()
 # Evaluate the relationship between lifestyle factors (BMI, smoking status) and stroke occurrences, 
 # considering variations across different groups like gender, age, or residential areas.
 
+#%%[markdown]
+'''We first visualize the distribution of BMI based on whether a person had a stroke or not.'''
+
+#%%
+bmi_stroke0 = (stroke['bmi'])[stroke.stroke == 0]
+bmi_stroke1 = (stroke['bmi'])[stroke.stroke == 1]
+plt.hist(bmi_stroke0, alpha=.5, label='No Stroke')
+plt.hist(bmi_stroke1, alpha=.5, label='Stroke')
+plt.title('Distribution of Body Mass Index Based on Stroke Status')
+plt.show()
+
+#%%[markdown]
 '''Since BMI is a numerical variable, while status of stroke is categorical, (and the population standard
 deviation of BMI is unknown) we can conduct a t test (as opposed to a z test).'''
 
+#%%
 # Null hypothesis, alternative hypothesis, assumptions
-
-bmi_stroke0 = (stroke['bmi'])[stroke.stroke == 0]
-bmi_stroke1 = (stroke['bmi'])[stroke.stroke == 1]
 
 t_stat, p_value = stats.ttest_ind(a=bmi_stroke0, b=bmi_stroke1, equal_var=True)
 print('Our t test statistic is', t_stat, 'with p-value', p_value) # Still getting nan values; we have not addressed the N/A values
 
-'''In a similar vein, because stroke and smoking status are both categorical variables, we can conduct
-a chi square test to determine whether the two variables are associated with each other.
+if p_value < .05:
+    conclusion = '''At an alpha level of .05, we reject the null hypothesis and conclude that 
+    the average BMI of those who had a stroke is significantly different from those individuals
+    who did not have a stroke. We can say that BMI and stroke are associated with one another.
+    '''
+else:
+    conclusion = '''At an alpha level of .05, we fail to reject the null hypothesis and conclude that 
+    the average BMI of those who had a stroke is not significantly different from those individuals
+    who did not have a stroke. We can say that BMI and stroke are not associated with one another.
+    '''
+#%%
+print(conclusion)
 
+#%%[markdown]
+'''In a similar vein, because stroke and smoking status are both categorical variables, we can now conduct
+a chi square test to determine whether the two variables are associated with each other.
+# Null hypothesis alternative hypothesis, assumptions
 First, we need to create a contingency table.'''
+
+#%%
+# smoking_status: "formerly smoked", "never smoked", "smokes" or "Unknown"
+
+#%%
+stroke0former = stroke[(stroke['stroke'] == 0) & (stroke['smoking_status'] == 'formerly smoked')]
+stroke1former = stroke[(stroke['stroke'] == 1) & (stroke['smoking_status'] == 'formerly smoked')]
+stroke0never = stroke[(stroke['stroke'] == 0) & (stroke['smoking_status'] == 'never smoked')]
+stroke1never = stroke[(stroke['stroke'] == 1) & (stroke['smoking_status'] == 'never smoked')]
+stroke0smokes = stroke[(stroke['stroke'] == 0) & (stroke['smoking_status'] == 'smokes')]
+stroke1smokes = stroke[(stroke['stroke'] == 1) & (stroke['smoking_status'] == 'smokes')]
+stroke0unknown = stroke[(stroke['stroke'] == 0) & (stroke['smoking_status'] == 'Unknown')]
+stroke1unknown = stroke[(stroke['stroke'] == 1) & (stroke['smoking_status'] == 'Unknown')]
+#%%
+cont_tab = np.array([[len(stroke0former), len(stroke1former)], [len(stroke0never), len(stroke1never)], [len(stroke0smokes), len(stroke1smokes)], [len(stroke0unknown), len(stroke1unknown)]])
+#%%
+# from scipy.stats import chi2_contingency
+chisquare_val, p_value, _, _ = chi2_contingency(cont_tab)
+print('Our chi square test statistic is', chisquare_val, 'with p-value', p_value)
+
+if p_value < .05:
+    conclusion = '''At an alpha level of .05, we reject the null hypothesis and conclude that 
+    status of smoking and whether an individual has a stroke or not are associated with one another.
+    '''
+else:
+    conclusion = '''At an alpha level of .05, we fail to reject the null hypothesis and conclude that 
+    status of smoking and whether an individual has a stroke or not are not associated with one another.'''
+#%%
+print(conclusion)
 
 #%%
 # SMART Question 2: How do the levels of hypertension and heart disease individually, or in combination, impact the probability of stroke among different work types? 
