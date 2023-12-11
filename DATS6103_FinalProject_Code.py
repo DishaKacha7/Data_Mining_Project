@@ -766,5 +766,121 @@ ax.set_title('Confusion Matrix')
 
 plt.tight_layout()
 plt.show()
-#%%
-# Random Forest - Abhradeep
+# %%[markdown]
+# # Abhradeep - Random Forest using GridCV  
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
+from datetime import datetime
+from sklearn import metrics
+from sklearn.metrics import plot_confusion_matrix, confusion_matrix
+
+# Define the parameters for Random Forest
+parameters_rf = {
+    'n_estimators': [50, 100, 200],
+    'max_depth': [None, 10, 20, 30],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4],
+    'class_weight': ['balanced']
+}
+
+# Create Random Forest Classifier
+rf = RandomForestClassifier(random_state=42)
+
+# Perform Grid Search to find the best hyperparameters
+rf_cv = GridSearchCV(estimator=rf, param_grid=parameters_rf, cv=10).fit(X_train, y_train)
+
+print('Tuned hyperparameters for Random Forest:', rf_cv.best_params_)
+print('Best accuracy for Random Forest:', rf_cv.best_score_)
+
+# Train Random Forest with the best hyperparameters
+t1_rf = datetime.now()
+rf_best = RandomForestClassifier(**rf_cv.best_params_, random_state=42).fit(X_train, y_train)
+t2_rf = datetime.now()
+
+# Predictions and evaluation
+y_pred_rf = rf_best.predict(X_test)
+rf_score = round(rf_best.score(X_test, y_test), 3)
+
+# Print results
+print('Random Forest score:', rf_score)
+cr_rf = metrics.classification_report(y_test, y_pred_rf)
+print(cr_rf)
+
+# Print time taken
+delta_rf = round((t2_rf - t1_rf).total_seconds(), 3)
+print('Random Forest takes:', delta_rf, 'Seconds')
+
+# Confusion Matrix
+cm_rf = confusion_matrix(y_test, y_pred_rf)
+print('Confusion Matrix for Random Forest:\n', cm_rf)
+
+# Plotting the confusion matrix for Random Forest
+plt.figure(figsize=(8, 6))
+plot_confusion_matrix(rf_best, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
+plt.title('Confusion Matrix for Random Forest')
+plt.show()
+
+# %%
+# Feature Importance Plot from Random forest
+feature_importances = rf_best.feature_importances_
+sorted_idx = np.argsort(feature_importances)
+
+plt.figure(figsize=(10, 6))
+plt.barh(range(len(sorted_idx)), feature_importances[sorted_idx], align="center")
+plt.yticks(range(len(sorted_idx)), X_train.columns[sorted_idx])
+plt.xlabel("Feature Importance")
+plt.title("Random Forest - Feature Importance")
+plt.show()
+
+# %%
+# Forest Plot
+from sklearn.tree import plot_tree
+
+# Visualize one tree from the forest
+plt.figure(figsize=(20, 10))
+plot_tree(rf_best.estimators_[0], feature_names=X_train.columns, filled=True, rounded=True, class_names=['No Stroke', 'Stroke'])
+plt.title("Example Decision Tree from Random Forest")
+plt.show()
+
+
+
+# %%[markdown]
+# # Abhradeep - Naive bayes 
+
+from sklearn.naive_bayes import GaussianNB
+
+# Create Gaussian Naive Bayes Classifier
+naive_bayes = GaussianNB()
+
+# Train the model
+naive_bayes.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred_naive_bayes = naive_bayes.predict(X_test)
+
+# Evaluate the model
+naive_bayes_score = round(naive_bayes.score(X_test, y_test), 3)
+print('Naive Bayes score:', naive_bayes_score)
+
+# Print the classification report
+cr_naive_bayes = metrics.classification_report(y_test, y_pred_naive_bayes)
+print(cr_naive_bayes)
+
+# Confusion Matrix
+cm_naive_bayes = confusion_matrix(y_test, y_pred_naive_bayes)
+print('Confusion Matrix for Naive Bayes:\n', cm_naive_bayes)
+
+# Plotting the confusion matrix for Naive Bayes
+plt.figure(figsize=(8, 6))
+plot_confusion_matrix(naive_bayes, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
+plt.title('Confusion Matrix for Naive Bayes')
+plt.show()
+
+
+
+
+
+# %%
+
+
+# %%
