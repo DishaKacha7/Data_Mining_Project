@@ -550,6 +550,42 @@ print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
 
 #%%
 # SVC - Disha
+parameters = {
+    'C' : [0.001, 0.01, 0.1, 1.0, 10, 100, 1000],
+    'gamma' : [0.001, 0.01, 0.1, 1.0, 10, 100, 1000],
+}
 
+svc = SVC()
+svc_cv = GridSearchCV(estimator=svc, param_grid=parameters, cv=10).fit(X_train, y_train)
+
+print('Tuned hyper parameters : ', svc_cv.best_params_)
+print('accuracy : ', svc_cv.best_score_)
+
+# Calculate time befor run algorithm
+t1 = datetime.now()
+# Model
+svc = SVC(**svc_cv.best_params_).fit(X_train, y_train)
+# Calculate time after run algorithm
+t2 = datetime.now()
+
+y_pred_svc = svc.predict(X_test)
+
+svc_score = round(svc.score(X_test, y_test), 3)
+print('SVC Score : ', svc_score)
+
+delta = t2-t1
+delta_svc = round(delta.total_seconds(), 3)
+print('SVC : ', delta_svc, 'Seconds')
+
+metrics.pair_confusion_matrix(y_test, y_pred_svc)
+
+cr = metrics.classification_report(y_test, y_pred_svc)
+print(cr)
+
+cm = confusion_matrix(y_test, y_pred_svc)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Dont Had Stroke', 'Had Stroke'])
+disp.plot(cmap='Greens', values_format='')
+disp.ax_.set_title('Confusion Matrix')
+plt.show()
 #%%
 # Random Forest - Abhradeep
