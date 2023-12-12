@@ -15,8 +15,8 @@ import warnings
 from datetime import datetime
 from scipy.stats import chi2_contingency
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 ################### Sklearn ####################################
+from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
@@ -25,6 +25,15 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import tree
+
+# pip install imbalanced-learn
+import imblearn
+from imblearn.over_sampling import SMOTE
+
+#%%
+# plot color palette
+deep_palette = sns.color_palette("deep")
+
 #%%
 # Read in the dataset: 
 # stroke_orig = pd.read_csv('/Users/dishakacha/Downloads/healthcare-dataset-stroke-data.csv', na_values='N/A')
@@ -57,14 +66,10 @@ stroke.head()
 stroke.tail()
 
 #%%[makdown]
-'''We first want to check whether there any N/A values in our data,'''
+'''We first want to check whether there any N/A, duplicate records, or outlier values in our data.'''
 
 #%%
-# Checking for N/A Values
-# if True in stroke.isna(): 
-#     print('There are N/A values in the dataset')
-# else:
-#     print('No N/A values in our dataset!')
+# Dropping N/A Values
 stroke.dropna(inplace = True)
 print(stroke.isna().sum())
 
@@ -95,11 +100,15 @@ for col in outliercols:
 stroke.info()
 
 #%%
-# Just checking to see how many data points we have for those had and did not have strokes:
+# How many data points we have for those who did and did not have strokes:
 total = len(stroke['stroke'])
 num_stroke = stroke['stroke'].sum()
 
 print('Of our', total, 'data points', num_stroke, 'had a stroke')
+
+#%%[markdown]
+'''Notice the severe imbalance in our target variable. We will address this with appropriate
+sampling techniques before proceeding with our modeling section.'''
 
 #%%[markdown]
 '''-----------------------------------------------------------------------------------------'''
@@ -114,14 +123,10 @@ gender_counts.plot.pie(y='Gender', autopct="%.1f%%")
 plt.title('Distribution of Gender')
 plt.show()
 
-# plot for stroke with hue based on gender
-
 # Age:
 plt.hist(stroke['age'], alpha=.5, label='Age')
 plt.title('Distribution of Age')
 plt.show()
-
-# stacked histogram for age based on stroke? or boxplot
 
 # Hypertension:
 plt.bar([0,1], list(stroke['hypertension'].value_counts())) # Have to check why the x-axis is not being changed to 0 and 1
@@ -138,8 +143,7 @@ plt.title("Counts of Heart Disease Cases")
 plt.show() 
 
 #%%[markdown]
-'''We see that the bar charts for heart disease and hypertension look very similar; these variables might be highly correlated; we want to be careful of multicollinearity when building models'''
-# We can add a plot of hypertension = 1, heart disease = 1
+'''We see that the bar charts for heart disease and hypertension look very similar; these variables might be highly correlated; we want to be careful of multicollinearity when building models.'''
 
 #%%
 # Ever Married:
@@ -191,44 +195,22 @@ plt.show()
 '''-----------------------------------------------------------------------------------------'''
 
 #%%[markdown]
-'''EDA Section'''
-# EDA
+'''EDA and Hypothesis Testing Section'''
 
 #%%[markdown]
 '''-----------------------------------------------------------------------------------------'''
 
-#%%[markdown]
-'''Hypothesis Testing Section'''
-# Hypothesis testing
-
-#%%
-# plot color palette
-deep_palette = sns.color_palette("deep")
 #%%
 # SMART Question 1: What is the impact of lifestyle choices, particularly BMI and 
-# smoking status, on the probability of having a stroke? Are there significant differences 
-# among different groups? 
-# Evaluate the relationship between lifestyle factors (BMI, smoking status) and stroke occurrences, 
-# considering variations across different groups like gender, age, or residential areas.
+# smoking status, on the probability of having a stroke?
 
 #%%[markdown]
 '''We first visualize the distribution of BMI based on whether a person had a stroke or not.'''
 
 # #%%
 bmi_stroke0 = (stroke['bmi'])[stroke.stroke == 0]
-# plt.hist(bmi_stroke0, alpha=.5)
-# plt.title('Distribution of Body Mass Index for Individuals Without a Stroke')
-# plt.legend()
-# plt.show()
-
-# #%%
 bmi_stroke1 = (stroke['bmi'])[stroke.stroke == 1]
-# plt.hist(bmi_stroke1, alpha=.5, color=deep_palette[1])
-# plt.title('Distribution of Body Mass Index Who Have Had a Stroke')
-# plt.legend()
-# plt.show()
 
-#%%
 plt.figure(figsize=(10, 6))
 sns.kdeplot(bmi_stroke0, label='No Stroke', fill=True, alpha=0.5)
 sns.kdeplot(bmi_stroke1, label='Stroke', fill=True, alpha=0.5)
@@ -237,13 +219,6 @@ plt.ylabel('Density')
 plt.title('Density Plot of Body Mass Index Based on Stroke Status')
 plt.legend()
 plt.show()
-
-# plt.figure(figsize=(10, 6))
-# sns.violinplot(x='stroke', y='bmi', data=stroke, inner='quartile', palette='muted')
-# plt.xlabel('Stroke Status')
-# plt.ylabel('Body Mass Index (BMI)')
-# plt.title('Violin Plot of Body Mass Index Based on Stroke Status')
-# plt.show()
 
 #%%[markdown]
 '''Since BMI is a numerical variable, while status of stroke is categorical, (and the population standard
@@ -266,18 +241,13 @@ else:
     the average BMI of those who had a stroke is not significantly different from those individuals
     who did not have a stroke. We can say that BMI and stroke are not associated with one another.
     '''
-#%%
 print(conclusion)
 
 #%%[markdown]
-'''In a similar vein, because stroke and smoking status are both categorical variables, we can now conduct
-a chi square test to determine whether the two variables are associated with each other.
-# Null hypothesis alternative hypothesis, assumptions
-First, we need to create a contingency table.'''
+'''We now want to understand how smoking status and having a stroke may be associated. We first
+visualize the data.'''
 
 #%%
-# EDA Plot for second part of SMART Q1
-# sns.set(style="whitegrid")
 plt.figure(figsize=(10, 6))
 sns.countplot(x='smoking_status', hue='stroke', data=stroke)
 plt.xlabel('Smoking Status')
@@ -286,7 +256,6 @@ plt.title('Bar Plot of Stroke Status by Smoking Status')
 plt.legend(title='Stroke Status', loc='upper right')
 plt.show()
 
-#%%
 stroke0 = stroke[stroke['stroke'] == 0]
 stroke1 = stroke[stroke['stroke'] == 1]
 fig, axes = plt.subplots(1, 2, figsize=(12, 6))
@@ -299,8 +268,11 @@ axes[1].set_title('Distribution of Smoking Status (Stroke)')
 plt.tight_layout()
 plt.show()
 
-#%%
-# smoking_status: "formerly smoked", "never smoked", "smokes" or "Unknown"
+#%%[markdown]
+'''In a similar vein as for BMI, because stroke and smoking status are both categorical variables, we can now conduct
+a chi square test to determine whether the two variables are associated with each other.
+# Null hypothesis alternative hypothesis, assumptions
+First, we need to create a contingency table.'''
 
 #%%
 stroke0former = stroke[(stroke['stroke'] == 0) & (stroke['smoking_status'] == 'formerly smoked')]
@@ -311,10 +283,9 @@ stroke0smokes = stroke[(stroke['stroke'] == 0) & (stroke['smoking_status'] == 's
 stroke1smokes = stroke[(stroke['stroke'] == 1) & (stroke['smoking_status'] == 'smokes')]
 stroke0unknown = stroke[(stroke['stroke'] == 0) & (stroke['smoking_status'] == 'Unknown')]
 stroke1unknown = stroke[(stroke['stroke'] == 1) & (stroke['smoking_status'] == 'Unknown')]
-#%%
+
 cont_tab = np.array([[len(stroke0former), len(stroke1former)], [len(stroke0never), len(stroke1never)], [len(stroke0smokes), len(stroke1smokes)], [len(stroke0unknown), len(stroke1unknown)]])
-#%%
-# from scipy.stats import chi2_contingency
+
 chisquare_val, p_value, _, _ = chi2_contingency(cont_tab)
 print('Our chi square test statistic is', chisquare_val, 'with p-value', p_value)
 
@@ -325,7 +296,6 @@ if p_value < .05:
 else:
     conclusion = '''At an alpha level of .05, we fail to reject the null hypothesis and conclude that 
     status of smoking and whether an individual has a stroke or not are not associated with one another.'''
-#%%
 print(conclusion)
 
 #%%[markdown]
@@ -414,6 +384,10 @@ for work_type in work_types:
         print("There is a significant association.")
     else:
         print("There is no significant association.")
+
+#%%[markdown]
+'''-----------------------------------------------------------------------------------------'''
+
 #%%
 # SMART Question 3: Is it possible to assess the influence of residence type, occupation, and smoking habits on stroke frequency? 
 # Evaluate the potential influence of smoking patterns and occupation on stroke risk among urban and rural residents. 
@@ -479,6 +453,10 @@ The small p-value (close to zero) suggests strong evidence against the null hypo
 print("""The small p-value (close to zero) suggests strong evidence against the null hypothesis, indicating that there is a significant association between work type and the occurrence of stroke.""")
 
 print("""The results provide statistical support for the hypothesis that work type and stroke are associated in the dataset. In practical terms, it implies that the distribution of stroke cases is not uniform across different work types, and there may be a relationship between the two variables.""")
+
+#%%[markdown]
+'''-----------------------------------------------------------------------------------------'''
+
 #%%
 # SMART Question 4: Is there a significant correlation between marital status, gender, and age in this analysis? 
 # Analyze marital status data to identify patterns within specific age groups among the married, and assess gender-based stroke frequency differences. 
@@ -610,23 +588,73 @@ X_scaled = pd.DataFrame(scaler.fit_transform(X_temp), columns=numerical_columns)
 X = pd.concat([X_scaled, stroke_numerical.drop(columns=numerical_columns + ['stroke'])], axis=1)
 
 print(X.describe())
+
+#%%[markdown]
+'''-----------------------------------------------------------------------------------------'''
+
 #%%[markdown]
 '''Modeling Section'''
 
+#%%[markdown]
+'''-----------------------------------------------------------------------------------------'''
+
+#%%[markdown]
+'''We notice from one of our earlier plots that cases of heart disease and hypertension seem to be
+very similar. Perhaps there is some correlation between these variables. We plot the heat map for all
+parameters so we can avoid multicollinearity in our models.'''
+
 #%%
-# Decision tree classifier - Nema
+plt.matshow(stroke.corr())
+cb = plt.colorbar()
+plt.xticks(range(stroke.select_dtypes(['number']).shape[1]), stroke.select_dtypes(['number']).columns, rotation=90)
+plt.yticks(range(stroke.select_dtypes(['number']).shape[1]), stroke.select_dtypes(['number']).columns)
+plt.title('Correlation Matrix')
+plt.show()
+
+corr = stroke.corr()
+corr.style.background_gradient(cmap='coolwarm')
+
+#%%[markdown]
+'''We don't seem to have any significant correlation between variables, so we should potentially
+be able to include all variables in our model. Even so, feature selection is important. Perhaps we
+even want to find a model explained by the top three factors.'''
+
+#%%[markdown]
+'''What is important to note is the severe imbanlace in our dataset's target variable. Before
+we perform any machine learning algorithms, we want to use SMOTE analysis to balance our dataset.
+This places more weight on the minority data (here, when patients had a stroke), to ensure that
+the algorithm has enough data from both subsets to properly learn how to predict for the two outcomes.'''
+
+#%%
+# SMOTE
 X = stroke.loc[:, stroke.columns != 'stroke']
 y = stroke['stroke']
 X_train, X_test, y_train, y_test = train_test_split(X_temp, y, test_size=0.2, random_state=1)
-clf = DecisionTreeClassifier()
+
+X_train_orig, X_test_orig, y_train_orig, y_test_orig = X_train, X_test, y_train, y_test
+
+smt = SMOTE()
+X_train, y_train = smt.fit_resample(X_train, y_train)
+
+#%%[markdown]
+'''We also realize the grave importance of our analysis. The model that we build can help predict
+whether an individual has a stroke or not. While normally we can choose a model evaluation metric
+based on personal preference or one guided by the nature of our dataset, we override this with
+the dataset's context. In the medical field, particularly when trying to determine the probability of
+having a stroke, we need to place particular importance on correctly predicting that a person will have
+a stroke when they, in fact, will. That is, we want our analysis to be honed in on the true positive rate.
+As such, we use the recall rate of each model, while also keeping in mind each model's F1 score (a combination
+of recall and precision).'''
+
 #%%
+# Decision tree classifier - Nema
+clf = DecisionTreeClassifier()
 param_grid = {
     'criterion': ['gini', 'entropy'],
     'max_depth': [None, 10, 20, 30],
     'min_samples_split': [2, 5, 10, 50, 100],
     'min_samples_leaf': [1, 2, 4, 10, 25]
 }
-#%%
 grid_search = GridSearchCV(clf, param_grid, cv=10, scoring='accuracy')
 grid_search.fit(X_train, y_train)
 best_clf = grid_search.best_estimator_
@@ -642,7 +670,7 @@ _ = tree.plot_tree(best_clf,
                    class_names=['No Stroke', 'Stroke'],  # Assuming binary classification
                    filled=True)
 plt.show()
-#%%
+
 # Print the best parameters found by GridSearchCV
 print("Best Parameters:", grid_search.best_params_)
 
@@ -658,10 +686,9 @@ delta = t2-t1
 delta_dt = round(delta.total_seconds(), 3)
 print('DecisionTree takes : ', delta_dt, 'Seconds')
 
-#%%
+# Plotting the confusion matrix
 cm = confusion_matrix(y_test, y_pred_dt)
 print(cm)
-# Plotting the confusion matrix
 plt.figure(figsize=(8, 6))
 plot_confusion_matrix(dt, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
 plt.title('Confusion Matrix')
@@ -766,6 +793,7 @@ ax.set_title('Confusion Matrix')
 
 plt.tight_layout()
 plt.show()
+
 # %%[markdown]
 # # Abhradeep - Random Forest using GridCV  
 from sklearn.ensemble import RandomForestClassifier
@@ -842,8 +870,6 @@ plot_tree(rf_best.estimators_[0], feature_names=X_train.columns, filled=True, ro
 plt.title("Example Decision Tree from Random Forest")
 plt.show()
 
-
-
 # %%[markdown]
 # # Abhradeep - Naive bayes 
 
@@ -875,12 +901,3 @@ plt.figure(figsize=(8, 6))
 plot_confusion_matrix(naive_bayes, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
 plt.title('Confusion Matrix for Naive Bayes')
 plt.show()
-
-
-
-
-
-# %%
-
-
-# %%
