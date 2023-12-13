@@ -905,3 +905,48 @@ plt.figure(figsize=(8, 6))
 plot_confusion_matrix(naive_bayes, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
 plt.title('Confusion Matrix for Naive Bayes')
 plt.show()
+
+# %%
+# Model Building Function
+
+def modelbuild_func(model_name, param_grid):
+    grid_search = GridSearchCV(model, param_grid, cv=10, scoring='recall')
+    grid_search.fit(X_train, y_train)
+    best_model = grid_search.best_estimator_
+    y_pred = best_model.predict(X_test)
+
+    if model_name == DecisionTreeClassifier():
+        # Plotting the tree
+        fig = plt.figure(figsize=(25, 20))
+_       = tree.plot_tree(best_clf, 
+                   feature_names=stroke.columns[:-1],  # Exclude the target column
+                   class_names=['No Stroke', 'Stroke'],  # Assuming binary classification
+                   filled=True)
+        plt.show()
+
+    # Print the best parameters found by GridSearchCV
+    print("Best Parameters:", grid_search.best_params_)
+
+    cr = metrics.classification_report(y_test, y_pred_dt)
+    print(cr)
+
+    # Plotting the confusion matrix
+    cm = confusion_matrix(y_test, y_pred_dt)
+    print(cm)
+    plt.figure(figsize=(8, 6))
+    plot_confusion_matrix(dt, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
+    plt.title('Confusion Matrix')
+    plt.show()
+
+    return grid_search.best_params_
+
+#%%
+# Model Timing Function
+
+def modeltime_func(model_with_params):
+    t1 = datetime.now()
+    best_model = model_with_params.fit(X_train, y_train)
+    t2 = datetime.now()
+    delta = t2-t1
+    delta_dt = round(delta.total_seconds(), 3)
+    print('Takes : ', delta_dt, 'seconds')
