@@ -662,7 +662,7 @@ param_grid = {
     'min_samples_split': [2, 5, 10, 50, 100],
     'min_samples_leaf': [1, 2, 4, 10, 25]
 }
-grid_search = GridSearchCV(clf, param_grid, cv=10, scoring='accuracy')
+grid_search = GridSearchCV(clf, param_grid, cv=10, scoring='recall')
 grid_search.fit(X_train, y_train)
 best_clf = grid_search.best_estimator_
 y_pred = best_clf.predict(X_test)
