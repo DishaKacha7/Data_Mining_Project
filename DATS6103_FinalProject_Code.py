@@ -16,7 +16,7 @@ from datetime import datetime
 from scipy.stats import chi2_contingency
 import matplotlib.pyplot as plt
 ################### Sklearn ####################################
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import plot_confusion_matrix, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
@@ -659,10 +659,7 @@ grid_search = GridSearchCV(clf, param_grid, cv=10, scoring='accuracy')
 grid_search.fit(X_train, y_train)
 best_clf = grid_search.best_estimator_
 y_pred = best_clf.predict(X_test)
-#%%
-# Model Accuracy
-print("Accuracy:", metrics.accuracy_score(y_test, y_pred))
-#%%
+
 # Plotting the tree
 fig = plt.figure(figsize=(25, 20))
 _ = tree.plot_tree(best_clf, 
@@ -796,11 +793,11 @@ plt.show()
 
 # %%[markdown]
 # # Abhradeep - Random Forest using GridCV  
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV
-from datetime import datetime
-from sklearn import metrics
-from sklearn.metrics import plot_confusion_matrix, confusion_matrix
+# from sklearn.ensemble import RandomForestClassifier
+# from sklearn.model_selection import GridSearchCV
+# from datetime import datetime
+# from sklearn import metrics
+# from sklearn.metrics import plot_confusion_matrix, confusion_matrix
 
 # Define the parameters for Random Forest
 parameters_rf = {
