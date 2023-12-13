@@ -16,7 +16,7 @@ from datetime import datetime
 from scipy.stats import chi2_contingency
 import matplotlib.pyplot as plt
 ################### Sklearn ####################################
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import plot_confusion_matrix, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
