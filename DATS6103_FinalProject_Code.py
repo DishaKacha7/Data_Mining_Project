@@ -16,7 +16,7 @@ from datetime import datetime
 from scipy.stats import chi2_contingency
 import matplotlib.pyplot as plt
 ################### Sklearn ####################################
-from sklearn.metrics import plot_confusion_matrix, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
@@ -440,7 +440,7 @@ plt.show()
 #%%
 # Create a contingency table
 contingency_table = pd.crosstab(stroke['work_type'], stroke['stroke'])
-
+print(contingency_table)
 # Perform chi-squared test
 chi2, p, _, _ = chi2_contingency(contingency_table)
 
@@ -574,6 +574,26 @@ stroke_numerical =  stroke_numerical.replace(
 
 stroke_numerical.head()
 
+#%%[markdown]
+'''We notice from one of our earlier plots that cases of heart disease and hypertension seem to be
+very similar. Perhaps there is some correlation between these variables. We plot the heat map for all
+parameters so we can avoid multicollinearity in our models.'''
+
+
+#%%
+columns_to_exclude = ['age_group']
+
+# Select only numeric columns excluding 'age_group'
+numeric_columns = stroke_numerical.drop(columns=columns_to_exclude).select_dtypes(include='number')
+
+# Calculate correlation matrix
+corr = numeric_columns.corr()
+
+# Plot the correlation matrix using seaborn
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", linewidths=.5)
+plt.title('Correlation Matrix (excluding age_group)')
+plt.show()
 #%%
 numerical_columns = ['age', 'hypertension', 'heart_disease', 'avg_glucose_level', 'bmi']
 
@@ -599,20 +619,7 @@ print(X.describe())
 '''-----------------------------------------------------------------------------------------'''
 
 #%%[markdown]
-'''We notice from one of our earlier plots that cases of heart disease and hypertension seem to be
-very similar. Perhaps there is some correlation between these variables. We plot the heat map for all
-parameters so we can avoid multicollinearity in our models.'''
 
-#%%
-plt.matshow(stroke.corr())
-cb = plt.colorbar()
-plt.xticks(range(stroke.select_dtypes(['number']).shape[1]), stroke.select_dtypes(['number']).columns, rotation=90)
-plt.yticks(range(stroke.select_dtypes(['number']).shape[1]), stroke.select_dtypes(['number']).columns)
-plt.title('Correlation Matrix')
-plt.show()
-
-corr = stroke.corr()
-corr.style.background_gradient(cmap='coolwarm')
 
 #%%[markdown]
 '''We don't seem to have any significant correlation between variables, so we should potentially
