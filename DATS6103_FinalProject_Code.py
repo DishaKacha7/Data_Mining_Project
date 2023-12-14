@@ -118,7 +118,6 @@ sampling techniques before proceeding with our modeling section.'''
 
 #%%
 # Visualization
-# We can replace some of these plots with density plots, boxplots, and violin plots (or anything else!)
 
 # Gender:
 gender_counts = stroke['gender'].value_counts(normalize=True)
@@ -173,7 +172,6 @@ plt.show()
 plt.hist(stroke['avg_glucose_level'], alpha=.5, label='Avg Glucose Level')
 plt.title('Distribution of Average Glucose Level in Blood')
 plt.show()
-# stacked histogram or boxplot for avg glucose level
 
 # BMI
 plt.hist(stroke['bmi'], alpha=.5, label='BMI')
@@ -186,10 +184,6 @@ plt.xlabel("Smoking Status")
 plt.ylabel("Number of Individuals") 
 plt.title("Counts of Individuals' Smoking Status") 
 plt.show()
-# I think we might need another plot here to visually determine its association with stroke
-
-#%%[markdown]
-'''[comments about visualization]'''
 
 #%%[markdown]
 '''Now that we have cleaned our dataset and visualized the key components, we can begin with exploratory data analysis.'''
@@ -232,19 +226,7 @@ deviation of BMI is unknown) we can conduct a t test (as opposed to a z test).''
 print('average BMI for stroke0:', np.average(bmi_stroke0))
 print('average BMI for stroke1:', np.average(bmi_stroke1))
 t_stat, p_value = stats.ttest_ind(a=bmi_stroke0, b=bmi_stroke1, equal_var=True)
-print('Our t test statistic is', t_stat, 'with p-value', p_value) # Still getting nan values; we have not addressed the N/A values
-
-if p_value < .05:
-    conclusion = '''At an alpha level of .05, we reject the null hypothesis and conclude that 
-    the average BMI of those who had a stroke is significantly different from those individuals
-    who did not have a stroke. We can say that BMI and stroke are associated with one another.
-    '''
-else:
-    conclusion = '''At an alpha level of .05, we fail to reject the null hypothesis and conclude that 
-    the average BMI of those who had a stroke is not significantly different from those individuals
-    who did not have a stroke. We can say that BMI and stroke are not associated with one another.
-    '''
-print(conclusion)
+print('Our t test statistic is', t_stat, 'with p-value', p_value)
 
 #%%[markdown]
 '''We now want to understand how smoking status and having a stroke may be associated. We first
@@ -273,9 +255,7 @@ plt.show()
 
 #%%[markdown]
 '''In a similar vein as for BMI, because stroke and smoking status are both categorical variables, we can now conduct
-a chi square test to determine whether the two variables are associated with each other.
-# Null hypothesis alternative hypothesis, assumptions
-First, we need to create a contingency table.'''
+a chi square test to determine whether the two variables are associated with each other. First, we need to create a contingency table.'''
 
 #%%
 stroke0former = stroke[(stroke['stroke'] == 0) & (stroke['smoking_status'] == 'formerly smoked')]
@@ -291,15 +271,6 @@ cont_tab = np.array([[len(stroke0former), len(stroke1former)], [len(stroke0never
 
 chisquare_val, p_value, _, _ = chi2_contingency(cont_tab)
 print('Our chi square test statistic is', chisquare_val, 'with p-value', p_value)
-
-if p_value < .05:
-    conclusion = '''At an alpha level of .05, we reject the null hypothesis and conclude that 
-    status of smoking and whether an individual has a stroke or not are associated with one another.
-    '''
-else:
-    conclusion = '''At an alpha level of .05, we fail to reject the null hypothesis and conclude that 
-    status of smoking and whether an individual has a stroke or not are not associated with one another.'''
-print(conclusion)
 
 #%%[markdown]
 '''-----------------------------------------------------------------------------------------'''
@@ -382,11 +353,11 @@ for work_type in work_types:
     plt.tight_layout()
     plt.show()
 
-    # You can then interpret the p-value to determine significance
-    if p < 0.05:
-        print("There is a significant association.")
-    else:
-        print("There is no significant association.")
+    # # You can then interpret the p-value to determine significance
+    # if p < 0.05:
+    #     print("There is a significant association.")
+    # else:
+    #     print("There is no significant association.")
 
 #%%[markdown]
 '''-----------------------------------------------------------------------------------------'''
@@ -456,12 +427,12 @@ chi2, p, _, _ = chi2_contingency(contingency_table)
 print("Chi-squared:", chi2)
 print("P-value:", p)
 
-print("""The chi-squared statistic being significantly different from zero suggests that there is a notable discrepancy between the observed distribution of stroke cases across different work types and the distribution expected under the assumption of independence.
-The small p-value (close to zero) suggests strong evidence against the null hypothesis, indicating that there is a significant association between work type and the occurrence of stroke.""")
+# print("""The chi-squared statistic being significantly different from zero suggests that there is a notable discrepancy between the observed distribution of stroke cases across different work types and the distribution expected under the assumption of independence.
+# The small p-value (close to zero) suggests strong evidence against the null hypothesis, indicating that there is a significant association between work type and the occurrence of stroke.""")
 
-print("""The small p-value (close to zero) suggests strong evidence against the null hypothesis, indicating that there is a significant association between work type and the occurrence of stroke.""")
+# print("""The small p-value (close to zero) suggests strong evidence against the null hypothesis, indicating that there is a significant association between work type and the occurrence of stroke.""")
 
-print("""The results provide statistical support for the hypothesis that work type and stroke are associated in the dataset. In practical terms, it implies that the distribution of stroke cases is not uniform across different work types, and there may be a relationship between the two variables.""")
+# print("""The results provide statistical support for the hypothesis that work type and stroke are associated in the dataset. In practical terms, it implies that the distribution of stroke cases is not uniform across different work types, and there may be a relationship between the two variables.""")
 
 #%%[markdown]
 '''-----------------------------------------------------------------------------------------'''
@@ -603,8 +574,14 @@ plt.figure(figsize=(10, 8))
 sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", linewidths=.5)
 plt.title('Correlation Matrix (excluding age_group)')
 plt.show()
+
+#%%[markdown]
+'''We see a very high correlation between heart disease and hypertension. To prevent
+multicollinearity, we exclude hypertension from our selection of explanatory variables.'''
+
 #%%
-numerical_columns = ['age', 'hypertension', 'heart_disease', 'avg_glucose_level', 'bmi']
+# numerical_columns = ['age', 'hypertension', 'heart_disease', 'avg_glucose_level', 'bmi']
+numerical_columns = ['age', 'heart_disease', 'avg_glucose_level', 'bmi']
 
 X_temp = stroke_numerical[numerical_columns]
 y = stroke_numerical['stroke']
@@ -628,15 +605,7 @@ print(X.describe())
 '''-----------------------------------------------------------------------------------------'''
 
 #%%[markdown]
-
-
-#%%[markdown]
-'''We don't seem to have any significant correlation between variables, so we should potentially
-be able to include all variables in our model. Even so, feature selection is important. Perhaps we
-even want to find a model explained by the top three factors.'''
-
-#%%[markdown]
-'''What is important to note is the severe imbanlace in our dataset's target variable. Before
+'''What is important to note is the severe imbalance in our dataset's target variable. Before
 we perform any machine learning algorithms, we want to use SMOTE analysis to balance our dataset.
 This places more weight on the minority data (here, when patients had a stroke), to ensure that
 the algorithm has enough data from both subsets to properly learn how to predict for the two outcomes.'''
@@ -664,7 +633,7 @@ As such, we use the recall rate of each model, while also keeping in mind each m
 of recall and precision).'''
 
 #%%
-# Decision tree classifier - Nema
+# Decision tree classifier
 clf = DecisionTreeClassifier()
 param_grid = {
     'criterion': ['gini', 'entropy'],
@@ -685,7 +654,6 @@ _ = tree.plot_tree(best_clf,
                    filled=True)
 plt.show()
 
-# Print the best parameters found by GridSearchCV
 print("Best Parameters:", grid_search.best_params_)
 
 t1 = datetime.now()
@@ -698,7 +666,6 @@ delta = t2-t1
 delta_dt = round(delta.total_seconds(), 3)
 print('DecisionTree takes : ', delta_dt, 'Seconds')
 
-# Plotting the confusion matrix
 cm = confusion_matrix(y_test, y_pred_dt)
 print(cm)
 plt.figure(figsize=(8, 6))
@@ -716,8 +683,11 @@ plt.xlabel("Feature Importance")
 plt.title("Decision Tree - Feature Importance")
 plt.show()
 
+#%%[markdown]
+'''-----------------------------------------------------------------------------------------'''
+
 #%%
-# Logistic regression - Devarsh
+# Logistic regression
 lr = LogisticRegression()
 parameters = {
     'C' : [0.001, 0.01, 0.1, 1.0, 10, 100, 1000],
@@ -743,30 +713,28 @@ delta = t2-t1
 delta_lr = round(delta.total_seconds(), 3)
 print('LogisticRegression takes : ', delta_lr, 'Seconds')
 
-#%%
-print('''Precision:
-Precision for class 0: 0.98 (high)
-Precision for class 1: 0.06 (low)
-Precision is the ratio of correctly predicted positive observations to the total predicted positives. In this context, it represents the accuracy of the model in predicting strokes for each class.
+# #%%
+# print('''Precision:
+# Precision for class 0: 0.98 (high)
+# Precision for class 1: 0.06 (low)
+# Precision is the ratio of correctly predicted positive observations to the total predicted positives. In this context, it represents the accuracy of the model in predicting strokes for each class.
 
-Recall (Sensitivity):
-Recall for class 0: 0.68 (moderate)
-Recall for class 1: 0.61 (moderate)
-Recall is the ratio of correctly predicted positive observations to the all observations in the actual class. In this context, it represents the ability of the model to capture all instances of strokes for each class.
+# Recall (Sensitivity):
+# Recall for class 0: 0.68 (moderate)
+# Recall for class 1: 0.61 (moderate)
+# Recall is the ratio of correctly predicted positive observations to the all observations in the actual class. In this context, it represents the ability of the model to capture all instances of strokes for each class.
 
-F1-Score:
-F1-Score for class 0: 0.80 (harmonic mean of precision and recall)
-F1-Score for class 1: 0.11 (harmonic mean of precision and recall)
-The F1-Score is the weighted average of precision and recall. It is a useful metric when there is an uneven class distribution.
+# F1-Score:
+# F1-Score for class 0: 0.80 (harmonic mean of precision and recall)
+# F1-Score for class 1: 0.11 (harmonic mean of precision and recall)
+# The F1-Score is the weighted average of precision and recall. It is a useful metric when there is an uneven class distribution.
 
-Accuracy:
-Overall accuracy: 0.67 (moderate)
-Accuracy is the ratio of correctly predicted observations to the total observations.''')
+# Accuracy:
+# Overall accuracy: 0.67 (moderate)
+# Accuracy is the ratio of correctly predicted observations to the total observations.''')
 
-#%%
 cm = confusion_matrix(y_test, y_pred_lr)
 print(cm)
-# Plotting the confusion matrix
 plt.figure(figsize=(8, 6))
 plot_confusion_matrix(lr, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
 plt.title('Confusion Matrix')
@@ -774,8 +742,11 @@ plt.show()
 
 # No feature importance for logistic regression
 
+#%%[markdown]
+'''-----------------------------------------------------------------------------------------'''
+
 #%%
-# SVC - Disha
+# SVC
 parameters = {
     'C' : [0.001, 0.01, 0.1, 1.0, 10, 100, 1000],
     'gamma' : [0.001, 0.01, 0.1, 1.0, 10, 100, 1000],
@@ -787,11 +758,8 @@ svc_cv = GridSearchCV(estimator=svc, param_grid=parameters, cv=10).fit(X_train, 
 print('Tuned hyper parameters : ', svc_cv.best_params_)
 print('Accuracy : ', svc_cv.best_score_)
 
-# Calculate time befor run algorithm
 t1 = datetime.now()
-# Model
 svc = SVC(**svc_cv.best_params_).fit(X_train, y_train)
-# Calculate time after run algorithm
 t2 = datetime.now()
 
 y_pred_svc = svc.predict(X_test)
@@ -828,33 +796,36 @@ plt.yticks(range(len(sorted_idx)), X_train.columns[sorted_idx])
 plt.xlabel("Feature Importance")
 plt.title("SVC - Feature Importance")
 plt.show()
-"""
-Optimal Hyperparameters: Following a grid search, we determined that the most effective hyperparameters for our model are C=10 and gamma=1.0.
+# """
+# Optimal Hyperparameters: Following a grid search, we determined that the most effective hyperparameters for our model are C=10 and gamma=1.0.
  
-Overall Accuracy: The SVC model demonstrated an impressive overall accuracy of approximately 95.5%, showcasing its ability to correctly classify instances.
+# Overall Accuracy: The SVC model demonstrated an impressive overall accuracy of approximately 95.5%, showcasing its ability to correctly classify instances.
  
-Performance Metrics for Class 0 (Dont Have Stroke):
+# Performance Metrics for Class 0 (Dont Have Stroke):
  
-Precision: 97% - Of instances predicted as positive, 97% were correct.
-Recall: 99% - 99% of actual positive instances were predicted correctly.
-F1-Score: 98% - A balanced measure of precision and recall.
-Support: 823 instances.
-Performance Metrics for Class 1 (Have Stroke):
+# Precision: 97% - Of instances predicted as positive, 97% were correct.
+# Recall: 99% - 99% of actual positive instances were predicted correctly.
+# F1-Score: 98% - A balanced measure of precision and recall.
+# Support: 823 instances.
+# Performance Metrics for Class 1 (Have Stroke):
  
-Precision: 8% - Only 8% of predicted positive instances were actually positive.
-Recall: 4% - Only 4% of actual positive instances were predicted correctly.
-F1-Score: 5% - A lower F1-Score suggests challenges in predicting positive instances.
-Support: 28 instances.
-Macro Avg and Weighted Avg:
+# Precision: 8% - Only 8% of predicted positive instances were actually positive.
+# Recall: 4% - Only 4% of actual positive instances were predicted correctly.
+# F1-Score: 5% - A lower F1-Score suggests challenges in predicting positive instances.
+# Support: 28 instances.
+# Macro Avg and Weighted Avg:
  
-Macro Avg F1-Score: 51% - The unweighted average of F1-Scores for both classes.
-Weighted Avg F1-Score: 95% - The average F1-Score, weighted by the number of instances for each class.
-Confusion Matrix Visualization: The confusion matrix visually represents the model's performance on both classes. While the model excels at predicting instances of Class 0 (Dont Have Stroke), it encounters difficulties with Class 1 (Have Stroke), resulting in lower precision, recall, and F1-Score for this class. Depending on the application, further exploration of evaluation metrics or methods to address class imbalance is warranted.
-"""
+# Macro Avg F1-Score: 51% - The unweighted average of F1-Scores for both classes.
+# Weighted Avg F1-Score: 95% - The average F1-Score, weighted by the number of instances for each class.
+# Confusion Matrix Visualization: The confusion matrix visually represents the model's performance on both classes. While the model excels at predicting instances of Class 0 (Dont Have Stroke), it encounters difficulties with Class 1 (Have Stroke), resulting in lower precision, recall, and F1-Score for this class. Depending on the application, further exploration of evaluation metrics or methods to address class imbalance is warranted.
+# """
+
+#%%[markdown]
+'''-----------------------------------------------------------------------------------------'''
+
 # %%[markdown]
 # Random Forest
-
-# Define the parameters for Random Forest
+rf = RandomForestClassifier(random_state=42)
 parameters_rf = {
     'n_estimators': [50, 100, 200],
     'max_depth': [None, 10, 20, 30],
@@ -862,9 +833,6 @@ parameters_rf = {
     'min_samples_leaf': [1, 2, 4],
     'class_weight': ['balanced']
 }
-
-# Create Random Forest Classifier
-rf = RandomForestClassifier(random_state=42)
 
 # Perform Grid Search to find the best hyperparameters
 rf_cv = GridSearchCV(estimator=rf, param_grid=parameters_rf, cv=10).fit(X_train, y_train)
@@ -877,12 +845,10 @@ t1_rf = datetime.now()
 rf_best = RandomForestClassifier(**rf_cv.best_params_, random_state=42).fit(X_train, y_train)
 t2_rf = datetime.now()
 
-# Predictions and evaluation
 y_pred_rf = rf_best.predict(X_test)
 cr_rf = metrics.classification_report(y_test, y_pred_rf)
 print(cr_rf)
 
-# Print time taken
 delta_rf = round((t2_rf - t1_rf).total_seconds(), 3)
 print('Random Forest takes:', delta_rf, 'Seconds')
 
@@ -909,32 +875,29 @@ plot_tree(rf_best.estimators_[0], feature_names=X_train.columns, filled=True, ro
 plt.title("Example Decision Tree from Random Forest")
 plt.show()
 
+#%%[markdown]
+'''-----------------------------------------------------------------------------------------'''
 # %%[markdown]
-
-# Create Gaussian Naive Bayes Classifier
+# Gaussian Naive Bayes Classifier
 naive_bayes = GaussianNB()
 
-# Train the model
 naive_bayes.fit(X_train, y_train)
-
-# Make predictions on the test set
 y_pred_naive_bayes = naive_bayes.predict(X_test)
 
-# Print the classification report
 cr_naive_bayes = metrics.classification_report(y_test, y_pred_naive_bayes)
 print(cr_naive_bayes)
 
-# Confusion Matrix
 cm_naive_bayes = confusion_matrix(y_test, y_pred_naive_bayes)
 print('Confusion Matrix for Naive Bayes:\n', cm_naive_bayes)
-
-# Plotting the confusion matrix for Naive Bayes
 plt.figure(figsize=(8, 6))
 plot_confusion_matrix(naive_bayes, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
 plt.title('Confusion Matrix for Naive Bayes')
 plt.show()
 
 # No feature importance for Naive Bayes
+
+#%%[markdown]
+'''-----------------------------------------------------------------------------------------'''
 
 #%%[markdown]
 '''Feature importance analysis from three of our five models tells us that
