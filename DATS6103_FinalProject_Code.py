@@ -412,7 +412,10 @@ plt.pie(smoking_status_counts, labels=smoking_status_counts.index, autopct='%1.1
 plt.title('Smoking Status Distribution')
 
 plt.show()
+"""
+The graph vividly illustrates that individuals in the private sector are more susceptible to strokes, followed by those who are self-employed and in government jobs. Notably, individuals who have never smoked exhibit the highest impact, with 39.7% experiencing strokes, surpassing even former smokers. This insightful observation sheds light on the nuanced relationships between occupational choices, smoking history, and stroke susceptibility.
 
+"""
 # Countplot for residence type and occupation distribution for stroke=1
 plt.figure(figsize=(15, 5))
 
@@ -439,7 +442,10 @@ plt.title('Occupation and Smoking Status Distribution for Stroke=1')
 
 # Adding another categorical variable using hue
 plt.show()
+"""
+The chart reveals a marginal 1.4% difference in stroke incidence between urban and rural areas, with a slightly higher prevalence in urban regions. Significantly, individuals with private jobs exhibit a higher susceptibility to strokes in both urban and rural settings, followed by those who are self-employed. Intriguingly, the impact on children is notably lower, emphasizing the occupational and residential dynamics influencing stroke occurrences.
 
+"""
 #%%
 # Create a contingency table
 contingency_table = pd.crosstab(stroke['work_type'], stroke['stroke'])
@@ -822,7 +828,29 @@ plt.yticks(range(len(sorted_idx)), X_train.columns[sorted_idx])
 plt.xlabel("Feature Importance")
 plt.title("SVC - Feature Importance")
 plt.show()
-
+"""
+Optimal Hyperparameters: Following a grid search, we determined that the most effective hyperparameters for our model are C=10 and gamma=1.0.
+ 
+Overall Accuracy: The SVC model demonstrated an impressive overall accuracy of approximately 95.5%, showcasing its ability to correctly classify instances.
+ 
+Performance Metrics for Class 0 (Dont Have Stroke):
+ 
+Precision: 97% - Of instances predicted as positive, 97% were correct.
+Recall: 99% - 99% of actual positive instances were predicted correctly.
+F1-Score: 98% - A balanced measure of precision and recall.
+Support: 823 instances.
+Performance Metrics for Class 1 (Have Stroke):
+ 
+Precision: 8% - Only 8% of predicted positive instances were actually positive.
+Recall: 4% - Only 4% of actual positive instances were predicted correctly.
+F1-Score: 5% - A lower F1-Score suggests challenges in predicting positive instances.
+Support: 28 instances.
+Macro Avg and Weighted Avg:
+ 
+Macro Avg F1-Score: 51% - The unweighted average of F1-Scores for both classes.
+Weighted Avg F1-Score: 95% - The average F1-Score, weighted by the number of instances for each class.
+Confusion Matrix Visualization: The confusion matrix visually represents the model's performance on both classes. While the model excels at predicting instances of Class 0 (Dont Have Stroke), it encounters difficulties with Class 1 (Have Stroke), resulting in lower precision, recall, and F1-Score for this class. Depending on the application, further exploration of evaluation metrics or methods to address class imbalance is warranted.
+"""
 # %%[markdown]
 # Random Forest
 
