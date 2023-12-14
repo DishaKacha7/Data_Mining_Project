@@ -807,7 +807,7 @@ disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Dont Have St
 
 # Adjust layout for better visibility
 fig, ax = plt.subplots(figsize=(8, 6))
-disp.plot(cmap='Greens', values_format='', ax=ax)
+disp.plot(cmap='Blues', values_format='', ax=ax)
 ax.set_title('Confusion Matrix')
 
 plt.tight_layout()
