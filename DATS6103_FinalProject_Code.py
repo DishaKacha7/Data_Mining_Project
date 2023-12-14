@@ -15,6 +15,7 @@ import warnings
 from datetime import datetime
 from scipy.stats import chi2_contingency
 import matplotlib.pyplot as plt
+
 ################### Sklearn ####################################
 from sklearn.metrics import plot_confusion_matrix, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.preprocessing import MinMaxScaler
@@ -25,6 +26,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import tree
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import plot_tree
 
 # pip install imbalanced-learn
 import imblearn
@@ -634,9 +637,10 @@ the algorithm has enough data from both subsets to properly learn how to predict
 
 #%%
 # SMOTE
-X = stroke.loc[:, stroke.columns != 'stroke']
-y = stroke['stroke']
-X_train, X_test, y_train, y_test = train_test_split(X_temp, y, test_size=0.2, random_state=1)
+stroke_numerical.drop('age_group', axis=1)
+X = stroke_numerical.loc[:, stroke_numerical.columns != 'stroke']
+y = stroke_numerical['stroke']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
 
 X_train_orig, X_test_orig, y_train_orig, y_test_orig = X_train, X_test, y_train, y_test
 
@@ -682,8 +686,6 @@ t1 = datetime.now()
 dt = DecisionTreeClassifier(**grid_search.best_params_).fit(X_train, y_train)
 t2 = datetime.now()
 y_pred_dt = dt.predict(X_test)
-dt_score = round(dt.score(X_test, y_test), 3)
-print('DecisionTree score : ', dt_score)
 cr = metrics.classification_report(y_test, y_pred_dt)
 print(cr)
 delta = t2-t1
@@ -698,15 +700,25 @@ plot_confusion_matrix(dt, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No
 plt.title('Confusion Matrix')
 plt.show()
 
+feature_importances = dt.feature_importances_
+sorted_idx = np.argsort(feature_importances)
+
+plt.figure(figsize=(10, 6))
+plt.barh(range(len(sorted_idx)), feature_importances[sorted_idx], align="center")
+plt.yticks(range(len(sorted_idx)), X_train.columns[sorted_idx])
+plt.xlabel("Feature Importance")
+plt.title("Decision Tree - Feature Importance")
+plt.show()
+
 #%%
 # Logistic regression - Devarsh
+lr = LogisticRegression()
 parameters = {
     'C' : [0.001, 0.01, 0.1, 1.0, 10, 100, 1000],
     'class_weight' : ['balanced'],
     'solver' : ['lbfgs', 'liblinear', 'newton-cg', 'newton-cholesky', 'sag', 'saga']
 }
 
-lr = LogisticRegression()
 lr_cv = GridSearchCV(estimator=lr, param_grid=parameters, cv=10).fit(X_train, y_train)
 
 print('Tuned hyper parameters : ', lr_cv.best_params_)
@@ -725,6 +737,7 @@ delta = t2-t1
 delta_lr = round(delta.total_seconds(), 3)
 print('LogisticRegression takes : ', delta_lr, 'Seconds')
 
+#%%
 print('''Precision:
 Precision for class 0: 0.98 (high)
 Precision for class 1: 0.06 (low)
@@ -752,6 +765,8 @@ plt.figure(figsize=(8, 6))
 plot_confusion_matrix(lr, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
 plt.title('Confusion Matrix')
 plt.show()
+
+# No feature importance for logistic regression
 
 #%%
 # SVC - Disha
@@ -798,13 +813,18 @@ ax.set_title('Confusion Matrix')
 plt.tight_layout()
 plt.show()
 
+feature_importances = svc.feature_importances_
+sorted_idx = np.argsort(feature_importances)
+
+plt.figure(figsize=(10, 6))
+plt.barh(range(len(sorted_idx)), feature_importances[sorted_idx], align="center")
+plt.yticks(range(len(sorted_idx)), X_train.columns[sorted_idx])
+plt.xlabel("Feature Importance")
+plt.title("SVC - Feature Importance")
+plt.show()
+
 # %%[markdown]
-# # Abhradeep - Random Forest using GridCV  
-# from sklearn.ensemble import RandomForestClassifier
-# from sklearn.model_selection import GridSearchCV
-# from datetime import datetime
-# from sklearn import metrics
-# from sklearn.metrics import plot_confusion_matrix, confusion_matrix
+# Random Forest
 
 # Define the parameters for Random Forest
 parameters_rf = {
@@ -831,10 +851,6 @@ t2_rf = datetime.now()
 
 # Predictions and evaluation
 y_pred_rf = rf_best.predict(X_test)
-rf_score = round(rf_best.score(X_test, y_test), 3)
-
-# Print results
-print('Random Forest score:', rf_score)
 cr_rf = metrics.classification_report(y_test, y_pred_rf)
 print(cr_rf)
 
@@ -842,17 +858,12 @@ print(cr_rf)
 delta_rf = round((t2_rf - t1_rf).total_seconds(), 3)
 print('Random Forest takes:', delta_rf, 'Seconds')
 
-# Confusion Matrix
-cm_rf = confusion_matrix(y_test, y_pred_rf)
-print('Confusion Matrix for Random Forest:\n', cm_rf)
-
 # Plotting the confusion matrix for Random Forest
 plt.figure(figsize=(8, 6))
 plot_confusion_matrix(rf_best, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
 plt.title('Confusion Matrix for Random Forest')
 plt.show()
 
-# %%
 # Feature Importance Plot from Random forest
 feature_importances = rf_best.feature_importances_
 sorted_idx = np.argsort(feature_importances)
@@ -864,10 +875,6 @@ plt.xlabel("Feature Importance")
 plt.title("Random Forest - Feature Importance")
 plt.show()
 
-# %%
-# Forest Plot
-from sklearn.tree import plot_tree
-
 # Visualize one tree from the forest
 plt.figure(figsize=(20, 10))
 plot_tree(rf_best.estimators_[0], feature_names=X_train.columns, filled=True, rounded=True, class_names=['No Stroke', 'Stroke'])
@@ -875,9 +882,6 @@ plt.title("Example Decision Tree from Random Forest")
 plt.show()
 
 # %%[markdown]
-# # Abhradeep - Naive bayes 
-
-from sklearn.naive_bayes import GaussianNB
 
 # Create Gaussian Naive Bayes Classifier
 naive_bayes = GaussianNB()
@@ -887,10 +891,6 @@ naive_bayes.fit(X_train, y_train)
 
 # Make predictions on the test set
 y_pred_naive_bayes = naive_bayes.predict(X_test)
-
-# Evaluate the model
-naive_bayes_score = round(naive_bayes.score(X_test, y_test), 3)
-print('Naive Bayes score:', naive_bayes_score)
 
 # Print the classification report
 cr_naive_bayes = metrics.classification_report(y_test, y_pred_naive_bayes)
@@ -906,47 +906,47 @@ plot_confusion_matrix(naive_bayes, X_test, y_test, cmap=plt.cm.Blues, display_la
 plt.title('Confusion Matrix for Naive Bayes')
 plt.show()
 
-# %%
-# Model Building Function
+# No feature importance for Naive Bayes
 
-def modelbuild_func(model_name, param_grid):
-    grid_search = GridSearchCV(model, param_grid, cv=10, scoring='recall')
-    grid_search.fit(X_train, y_train)
-    best_model = grid_search.best_estimator_
-    y_pred = best_model.predict(X_test)
+#%%[markdown]
+'''Feature importance analysis from three of our five models tells us that
+age, average glucose level, and BMI are the top three most important explanatory
+variables to predict whether an individual will have a stroke or not.'''
 
-    if model_name == DecisionTreeClassifier():
-        # Plotting the tree
-        fig = plt.figure(figsize=(25, 20))
-_       = tree.plot_tree(best_clf, 
-                   feature_names=stroke.columns[:-1],  # Exclude the target column
-                   class_names=['No Stroke', 'Stroke'],  # Assuming binary classification
-                   filled=True)
-        plt.show()
-
-    # Print the best parameters found by GridSearchCV
-    print("Best Parameters:", grid_search.best_params_)
-
-    cr = metrics.classification_report(y_test, y_pred_dt)
-    print(cr)
-
-    # Plotting the confusion matrix
-    cm = confusion_matrix(y_test, y_pred_dt)
-    print(cm)
-    plt.figure(figsize=(8, 6))
-    plot_confusion_matrix(dt, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
-    plt.title('Confusion Matrix')
-    plt.show()
-
-    return grid_search.best_params_
+#%%[markdown]
+'''Since we saw that Naive Bayes performed the best based on recall rate, we are
+interested in fitting a model with this algorithm and using our top three features.'''
 
 #%%
-# Model Timing Function
+X = stroke_numerical[['age', 'avg_glucose_level', 'bmi']]
+y = stroke_numerical['stroke']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
 
-def modeltime_func(model_with_params):
-    t1 = datetime.now()
-    best_model = model_with_params.fit(X_train, y_train)
-    t2 = datetime.now()
-    delta = t2-t1
-    delta_dt = round(delta.total_seconds(), 3)
-    print('Takes : ', delta_dt, 'seconds')
+X_train_orig, X_test_orig, y_train_orig, y_test_orig = X_train, X_test, y_train, y_test
+
+smt = SMOTE()
+X_train, y_train = smt.fit_resample(X_train, y_train)
+
+#%%
+# Naive Bayes after feature selection
+naive_bayes_select = GaussianNB()
+
+# Train the model
+naive_bayes_select.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred_naive_bayes_select = naive_bayes_select.predict(X_test)
+
+# Print the classification report
+cr_naive_bayes_select = metrics.classification_report(y_test, y_pred_naive_bayes_select)
+print(cr_naive_bayes_select)
+
+# Confusion Matrix
+cm_naive_bayes_select = confusion_matrix(y_test, y_pred_naive_bayes_select)
+print('Confusion Matrix for Naive Bayes:\n', cm_naive_bayes_select)
+
+# Plotting the confusion matrix for Naive Bayes
+plt.figure(figsize=(8, 6))
+plot_confusion_matrix(naive_bayes_select, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
+plt.title('Confusion Matrix for Naive Bayes after Feature Selection')
+plt.show()
