@@ -222,7 +222,6 @@ plt.show()
 deviation of BMI is unknown) we can conduct a t test (as opposed to a z test).'''
 
 #%%
-# Null hypothesis, alternative hypothesis, assumptions
 print('average BMI for stroke0:', np.average(bmi_stroke0))
 print('average BMI for stroke1:', np.average(bmi_stroke1))
 t_stat, p_value = stats.ttest_ind(a=bmi_stroke0, b=bmi_stroke1, equal_var=True)
@@ -353,12 +352,6 @@ for work_type in work_types:
     plt.tight_layout()
     plt.show()
 
-    # # You can then interpret the p-value to determine significance
-    # if p < 0.05:
-    #     print("There is a significant association.")
-    # else:
-    #     print("There is no significant association.")
-
 #%%[markdown]
 '''-----------------------------------------------------------------------------------------'''
 
@@ -383,10 +376,7 @@ plt.pie(smoking_status_counts, labels=smoking_status_counts.index, autopct='%1.1
 plt.title('Smoking Status Distribution')
 
 plt.show()
-"""
-The graph vividly illustrates that individuals in the private sector are more susceptible to strokes, followed by those who are self-employed and in government jobs. Notably, individuals who have never smoked exhibit the highest impact, with 39.7% experiencing strokes, surpassing even former smokers. This insightful observation sheds light on the nuanced relationships between occupational choices, smoking history, and stroke susceptibility.
 
-"""
 # Countplot for residence type and occupation distribution for stroke=1
 plt.figure(figsize=(15, 5))
 
@@ -413,10 +403,7 @@ plt.title('Occupation and Smoking Status Distribution for Stroke=1')
 
 # Adding another categorical variable using hue
 plt.show()
-"""
-The chart reveals a marginal 1.4% difference in stroke incidence between urban and rural areas, with a slightly higher prevalence in urban regions. Significantly, individuals with private jobs exhibit a higher susceptibility to strokes in both urban and rural settings, followed by those who are self-employed. Intriguingly, the impact on children is notably lower, emphasizing the occupational and residential dynamics influencing stroke occurrences.
 
-"""
 #%%
 # Create a contingency table
 contingency_table = pd.crosstab(stroke['work_type'], stroke['stroke'])
@@ -426,13 +413,6 @@ chi2, p, _, _ = chi2_contingency(contingency_table)
 
 print("Chi-squared:", chi2)
 print("P-value:", p)
-
-# print("""The chi-squared statistic being significantly different from zero suggests that there is a notable discrepancy between the observed distribution of stroke cases across different work types and the distribution expected under the assumption of independence.
-# The small p-value (close to zero) suggests strong evidence against the null hypothesis, indicating that there is a significant association between work type and the occurrence of stroke.""")
-
-# print("""The small p-value (close to zero) suggests strong evidence against the null hypothesis, indicating that there is a significant association between work type and the occurrence of stroke.""")
-
-# print("""The results provide statistical support for the hypothesis that work type and stroke are associated in the dataset. In practical terms, it implies that the distribution of stroke cases is not uniform across different work types, and there may be a relationship between the two variables.""")
 
 #%%[markdown]
 '''-----------------------------------------------------------------------------------------'''
@@ -452,22 +432,6 @@ sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", vmin=-1,
 plt.title('Correlation Matrix: Age and Stroke')
 plt.show()
 
-print('''Age and Stroke (0.245257):
-
-There is a positive correlation of approximately 0.25 between age and stroke.
-This suggests that, on average, as age increases, the likelihood of having a stroke also tends to increase. However, the correlation is not extremely strong.
-
-       
-Ever Married and Stroke (0.108340):
-
-There is a positive correlation of approximately 0.11 between ever_married_encoded and stroke.
-This suggests a weak positive relationship between being ever married and the likelihood of having a stroke. 
-
-Gender and Stroke (0.008929):
-
-There is a very weak positive correlation of approximately 0.009 between gender_encoded and stroke.
-This suggests a minimal relationship between gender and the likelihood of having a stroke.           
-''')
 # %%
 
 age_bins = [0, 18, 35, 50, 65, 100]
@@ -489,35 +453,11 @@ plt.xlabel('Age Group and Stroke')
 plt.ylabel('Count')
 plt.show()
 
-
-print('''Age Group 19-35:
-
-Individuals in this age group who are ever married have a low incidence of strokes (1 case).
-The majority (374 cases) of individuals in this age group who are ever married do not have strokes.
-
-
-Age Group 36-50:
-
-There is a slightly higher incidence of strokes in this age group (12 cases) compared to the 19-35 age group.
-The majority (803 cases) of individuals in this age group who are ever married do not have strokes.
-
-      
-Age Group 51-65:
-
-The incidence of strokes increases in this age group (43 cases), indicating a higher risk compared to the younger age groups.
-The majority (824 cases) of individuals in this age group who are ever married do not have strokes.
-
-      
-Age Group 66-100:
-
-This age group has the highest incidence of strokes (85 cases) among individuals who are ever married.
-The majority (593 cases) of individuals in this age group who are ever married do not have strokes.
-''')
 #%%[markdown]
 '''-----------------------------------------------------------------------------------------'''
 
 #%%[markdown]
-'''Unique Values and Categorical changes and Normalization'''
+'''Categorical changes, Standardization, and Normalization'''
 #%%
 columns_temp = ['gender', 'ever_married', 'work_type', 'smoking_status', 'Residence_type']
 
@@ -554,34 +494,10 @@ stroke_numerical =  stroke_numerical.replace(
 
 stroke_numerical.head()
 
-#%%[markdown]
-'''We notice from one of our earlier plots that cases of heart disease and hypertension seem to be
-very similar. Perhaps there is some correlation between these variables. We plot the heat map for all
-parameters so we can avoid multicollinearity in our models.'''
-
-
-#%%
-columns_to_exclude = ['age_group']
-
-# Select only numeric columns excluding 'age_group'
-numeric_columns = stroke_numerical.drop(columns=columns_to_exclude).select_dtypes(include='number')
-
-# Calculate correlation matrix
-corr = numeric_columns.corr()
-
-# Plot the correlation matrix using seaborn
-plt.figure(figsize=(10, 8))
-sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", linewidths=.5)
-plt.title('Correlation Matrix (excluding age_group)')
-plt.show()
-
-#%%[markdown]
-'''We see a very high correlation between heart disease and hypertension. To prevent
-multicollinearity, we exclude hypertension from our selection of explanatory variables.'''
-
 #%%
 # numerical_columns = ['age', 'hypertension', 'heart_disease', 'avg_glucose_level', 'bmi']
-numerical_columns = ['age', 'heart_disease', 'avg_glucose_level', 'bmi']
+# numerical_columns = ['age', 'heart_disease', 'avg_glucose_level', 'bmi']
+numerical_columns = ['age', 'heart_disease', 'work_type', 'avg_glucose_level', 'bmi', 'smoking_status']
 
 X_temp = stroke_numerical[numerical_columns]
 y = stroke_numerical['stroke']
@@ -590,8 +506,9 @@ y = stroke_numerical['stroke']
 scaler = MinMaxScaler()
 X_scaled = pd.DataFrame(scaler.fit_transform(X_temp), columns=numerical_columns)
 
-# Concatenate the scaled numerical features with the encoded categorical features
-X = pd.concat([X_scaled, stroke_numerical.drop(columns=numerical_columns + ['stroke'])], axis=1)
+# # Concatenate the scaled numerical features with the encoded categorical features
+# X = pd.concat([X_scaled, stroke_numerical.drop(columns=numerical_columns + ['stroke'])], axis=1)
+X = X_scaled
 
 print(X.describe())
 
@@ -612,9 +529,6 @@ the algorithm has enough data from both subsets to properly learn how to predict
 
 #%%
 # SMOTE
-stroke_numerical.drop('age_group', axis=1)
-X = stroke_numerical.loc[:, stroke_numerical.columns != 'stroke']
-y = stroke_numerical['stroke']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
 
 X_train_orig, X_test_orig, y_train_orig, y_test_orig = X_train, X_test, y_train, y_test
@@ -695,43 +609,19 @@ parameters = {
     'solver' : ['lbfgs', 'liblinear', 'newton-cg', 'newton-cholesky', 'sag', 'saga']
 }
 
-lr_cv = GridSearchCV(estimator=lr, param_grid=parameters, cv=10).fit(X_train, y_train)
+lr_cv = GridSearchCV(estimator=lr, param_grid=parameters, cv=10, scoring = 'recall').fit(X_train, y_train)
 
 print('Tuned hyper parameters : ', lr_cv.best_params_)
-print('accuracy : ', lr_cv.best_score_)
 
-#%%
 t1 = datetime.now()
 lr = LogisticRegression(**lr_cv.best_params_).fit(X_train, y_train)
 t2 = datetime.now()
 y_pred_lr = lr.predict(X_test)
-lr_score = round(lr.score(X_test, y_test), 3)
-print('LogisticRegression score : ', lr_score)
 cr = metrics.classification_report(y_test, y_pred_lr)
 print(cr)
 delta = t2-t1
 delta_lr = round(delta.total_seconds(), 3)
 print('LogisticRegression takes : ', delta_lr, 'Seconds')
-
-# #%%
-# print('''Precision:
-# Precision for class 0: 0.98 (high)
-# Precision for class 1: 0.06 (low)
-# Precision is the ratio of correctly predicted positive observations to the total predicted positives. In this context, it represents the accuracy of the model in predicting strokes for each class.
-
-# Recall (Sensitivity):
-# Recall for class 0: 0.68 (moderate)
-# Recall for class 1: 0.61 (moderate)
-# Recall is the ratio of correctly predicted positive observations to the all observations in the actual class. In this context, it represents the ability of the model to capture all instances of strokes for each class.
-
-# F1-Score:
-# F1-Score for class 0: 0.80 (harmonic mean of precision and recall)
-# F1-Score for class 1: 0.11 (harmonic mean of precision and recall)
-# The F1-Score is the weighted average of precision and recall. It is a useful metric when there is an uneven class distribution.
-
-# Accuracy:
-# Overall accuracy: 0.67 (moderate)
-# Accuracy is the ratio of correctly predicted observations to the total observations.''')
 
 cm = confusion_matrix(y_test, y_pred_lr)
 print(cm)
@@ -740,7 +630,11 @@ plot_confusion_matrix(lr, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No
 plt.title('Confusion Matrix')
 plt.show()
 
-# No feature importance for logistic regression
+coefficients = lr.coef_[0]
+
+feature_importance = pd.DataFrame({'Feature': X.columns, 'Importance': np.abs(coefficients)})
+feature_importance = feature_importance.sort_values('Importance', ascending=True)
+feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
 
 #%%[markdown]
 '''-----------------------------------------------------------------------------------------'''
@@ -753,7 +647,7 @@ parameters = {
 }
 
 svc = SVC()
-svc_cv = GridSearchCV(estimator=svc, param_grid=parameters, cv=10).fit(X_train, y_train)
+svc_cv = GridSearchCV(estimator=svc, param_grid=parameters, cv=10, scoring = 'recall').fit(X_train, y_train)
 
 print('Tuned hyper parameters : ', svc_cv.best_params_)
 print('Accuracy : ', svc_cv.best_score_)
@@ -763,9 +657,6 @@ svc = SVC(**svc_cv.best_params_).fit(X_train, y_train)
 t2 = datetime.now()
 
 y_pred_svc = svc.predict(X_test)
-
-svc_score = round(svc.score(X_test, y_test), 3)
-print('SVC Score : ', svc_score)
 
 delta = t2-t1
 delta_svc = round(delta.total_seconds(), 3)
@@ -787,38 +678,7 @@ ax.set_title('Confusion Matrix')
 plt.tight_layout()
 plt.show()
 
-feature_importances = svc.feature_importances_
-sorted_idx = np.argsort(feature_importances)
-
-plt.figure(figsize=(10, 6))
-plt.barh(range(len(sorted_idx)), feature_importances[sorted_idx], align="center")
-plt.yticks(range(len(sorted_idx)), X_train.columns[sorted_idx])
-plt.xlabel("Feature Importance")
-plt.title("SVC - Feature Importance")
-plt.show()
-# """
-# Optimal Hyperparameters: Following a grid search, we determined that the most effective hyperparameters for our model are C=10 and gamma=1.0.
- 
-# Overall Accuracy: The SVC model demonstrated an impressive overall accuracy of approximately 95.5%, showcasing its ability to correctly classify instances.
- 
-# Performance Metrics for Class 0 (Dont Have Stroke):
- 
-# Precision: 97% - Of instances predicted as positive, 97% were correct.
-# Recall: 99% - 99% of actual positive instances were predicted correctly.
-# F1-Score: 98% - A balanced measure of precision and recall.
-# Support: 823 instances.
-# Performance Metrics for Class 1 (Have Stroke):
- 
-# Precision: 8% - Only 8% of predicted positive instances were actually positive.
-# Recall: 4% - Only 4% of actual positive instances were predicted correctly.
-# F1-Score: 5% - A lower F1-Score suggests challenges in predicting positive instances.
-# Support: 28 instances.
-# Macro Avg and Weighted Avg:
- 
-# Macro Avg F1-Score: 51% - The unweighted average of F1-Scores for both classes.
-# Weighted Avg F1-Score: 95% - The average F1-Score, weighted by the number of instances for each class.
-# Confusion Matrix Visualization: The confusion matrix visually represents the model's performance on both classes. While the model excels at predicting instances of Class 0 (Dont Have Stroke), it encounters difficulties with Class 1 (Have Stroke), resulting in lower precision, recall, and F1-Score for this class. Depending on the application, further exploration of evaluation metrics or methods to address class imbalance is warranted.
-# """
+# No feature selection for svc with a non-linear kernel
 
 #%%[markdown]
 '''-----------------------------------------------------------------------------------------'''
@@ -835,7 +695,7 @@ parameters_rf = {
 }
 
 # Perform Grid Search to find the best hyperparameters
-rf_cv = GridSearchCV(estimator=rf, param_grid=parameters_rf, cv=10).fit(X_train, y_train)
+rf_cv = GridSearchCV(estimator=rf, param_grid=parameters_rf, cv=10, scoring='recall').fit(X_train, y_train)
 
 print('Tuned hyperparameters for Random Forest:', rf_cv.best_params_)
 print('Best accuracy for Random Forest:', rf_cv.best_score_)
@@ -894,50 +754,74 @@ plot_confusion_matrix(naive_bayes, X_test, y_test, cmap=plt.cm.Blues, display_la
 plt.title('Confusion Matrix for Naive Bayes')
 plt.show()
 
+# Time the naive bayes algorithm
+
 # No feature importance for Naive Bayes
 
 #%%[markdown]
 '''-----------------------------------------------------------------------------------------'''
 
 #%%[markdown]
-'''Feature importance analysis from three of our five models tells us that
+'''Feature importance analysis from two of our five models tells us that
 age, average glucose level, and BMI are the top three most important explanatory
-variables to predict whether an individual will have a stroke or not.'''
-
-#%%[markdown]
-'''Since we saw that Naive Bayes performed the best based on recall rate, we are
-interested in fitting a model with this algorithm and using our top three features.'''
+variables to predict whether an individual will have a stroke or not. Feature importance
+for logistic regression (our best model after fitting with all six of our selected parameters) 
+specifically indicates that age, smoking_status, and heart_disease are the best features. 
+We fit these two models and compare them to see whether we can get a model with the top 
+three parameters predicting stroke occurences with reasonable performance.'''
 
 #%%
-X = stroke_numerical[['age', 'avg_glucose_level', 'bmi']]
-y = stroke_numerical['stroke']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+# Logistic Regression after feature selection - age, avg_glucose_level, bmi
+X_reduced = X[['age', 'avg_glucose_level', 'bmi']]
+X_train, X_test, y_train, y_test = train_test_split(X_reduced, y, test_size=0.2, random_state=1)
 
 X_train_orig, X_test_orig, y_train_orig, y_test_orig = X_train, X_test, y_train, y_test
 
 smt = SMOTE()
 X_train, y_train = smt.fit_resample(X_train, y_train)
 
-#%%
-# Naive Bayes after feature selection
-naive_bayes_select = GaussianNB()
+# %%
+t1 = datetime.now()
+lr = LogisticRegression(**lr_cv.best_params_).fit(X_train, y_train)
+t2 = datetime.now()
+y_pred_lr = lr.predict(X_test)
+cr = metrics.classification_report(y_test, y_pred_lr)
+print(cr)
+delta = t2-t1
+delta_lr = round(delta.total_seconds(), 3)
+print('LogisticRegression takes : ', delta_lr, 'Seconds')
 
-# Train the model
-naive_bayes_select.fit(X_train, y_train)
-
-# Make predictions on the test set
-y_pred_naive_bayes_select = naive_bayes_select.predict(X_test)
-
-# Print the classification report
-cr_naive_bayes_select = metrics.classification_report(y_test, y_pred_naive_bayes_select)
-print(cr_naive_bayes_select)
-
-# Confusion Matrix
-cm_naive_bayes_select = confusion_matrix(y_test, y_pred_naive_bayes_select)
-print('Confusion Matrix for Naive Bayes:\n', cm_naive_bayes_select)
-
-# Plotting the confusion matrix for Naive Bayes
+cm = confusion_matrix(y_test, y_pred_lr)
+print(cm)
 plt.figure(figsize=(8, 6))
-plot_confusion_matrix(naive_bayes_select, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
-plt.title('Confusion Matrix for Naive Bayes after Feature Selection')
+plot_confusion_matrix(lr, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
+plt.title('Confusion Matrix')
+plt.show()
+
+#%%
+# Logistic Regression after feature selection - age, smoking_status, heart_disease
+X_reduced = X[['age', 'smoking_status', 'heart_disease']]
+X_train, X_test, y_train, y_test = train_test_split(X_reduced, y, test_size=0.2, random_state=1)
+
+X_train_orig, X_test_orig, y_train_orig, y_test_orig = X_train, X_test, y_train, y_test
+
+smt = SMOTE()
+X_train, y_train = smt.fit_resample(X_train, y_train)
+
+# %%
+t1 = datetime.now()
+lr = LogisticRegression(**lr_cv.best_params_).fit(X_train, y_train)
+t2 = datetime.now()
+y_pred_lr = lr.predict(X_test)
+cr = metrics.classification_report(y_test, y_pred_lr)
+print(cr)
+delta = t2-t1
+delta_lr = round(delta.total_seconds(), 3)
+print('LogisticRegression takes : ', delta_lr, 'Seconds')
+
+cm = confusion_matrix(y_test, y_pred_lr)
+print(cm)
+plt.figure(figsize=(8, 6))
+plot_confusion_matrix(lr, X_test, y_test, cmap=plt.cm.Blues, display_labels=['No Stroke', 'Stroke'])
+plt.title('Confusion Matrix')
 plt.show()
