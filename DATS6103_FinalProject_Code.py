@@ -756,10 +756,12 @@ plt.show()
 '''-----------------------------------------------------------------------------------------'''
 # %%[markdown]
 # Gaussian Naive Bayes Classifier
+start_time=time.time()
 naive_bayes = GaussianNB()
 
 naive_bayes.fit(X_train, y_train)
 y_pred_naive_bayes = naive_bayes.predict(X_test)
+end_time=time.time()
 
 cr_naive_bayes = metrics.classification_report(y_test, y_pred_naive_bayes)
 print(cr_naive_bayes)
@@ -772,7 +774,7 @@ plt.title('Confusion Matrix for Naive Bayes')
 plt.show()
 
 # Time the naive bayes algorithm
-
+print(f"Training time: {end_time - start_time} seconds")
 # No feature importance for Naive Bayes
 
 #%%[markdown]
