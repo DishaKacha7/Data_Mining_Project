@@ -278,7 +278,24 @@ print('Our chi square test statistic is', chisquare_val, 'with p-value', p_value
 # SMART Question 2: How do the levels of hypertension and heart disease individually, or in combination, impact the probability of stroke among different work types? 
 # Investigate the relationship between hypertension, heart disease, and their interaction among various work types to discern if certain professions are more susceptible to strokes due to these health factors. 
 
-# Step 1: We are creating a new variable representing the combination of hypertension and heart disease
+# We are going to check the relation between work type and hypertension and heart disease.
+plt.figure(figsize=(12, 8))
+sns.countplot(x="work_type", hue="hypertension", data=stroke, palette="Blues", edgecolor="k")
+plt.title("Distribution of Hypertension by Work Type")
+plt.xlabel("Work Type")
+plt.ylabel("Count")
+plt.legend(title="Hypertension", labels=["No Hypertension", "Hypertension"])
+plt.show()
+
+plt.figure(figsize=(12, 8))
+sns.countplot(x="work_type", hue="heart_disease", data=stroke, palette="Greens", edgecolor="k")
+plt.title("Distribution of Heart Disease by Work Type")
+plt.xlabel("Work Type")
+plt.ylabel("Count")
+plt.legend(title="Heart Disease", labels=["No Heart Disease", "Heart Disease"])
+plt.show()
+
+# We are creating a new variable representing the combination of hypertension and heart disease
 
 stroke['hypertension_heart_disease_interaction'] = 0  # 0 for no condition
 
@@ -287,7 +304,6 @@ stroke.loc[(stroke['hypertension'] == 1) & (stroke['heart_disease'] == 0), 'hype
 stroke.loc[(stroke['hypertension'] == 0) & (stroke['heart_disease'] == 1), 'hypertension_heart_disease_interaction'] = 2  # 2 for heart disease only
 stroke.loc[(stroke['hypertension'] == 1) & (stroke['heart_disease'] == 1), 'hypertension_heart_disease_interaction'] = 3  # 3 for both conditions
 
-# Printing the DataFrame to check the new variable
 print(stroke[['hypertension', 'heart_disease', 'hypertension_heart_disease_interaction']])
 
 #%%
@@ -316,6 +332,7 @@ plt.legend(title="Hypertension-Heart Disease Interaction")
 plt.tight_layout()
 plt.show()
 
+# Performing the Chi-Square test between the new variable and stroke.
 from scipy.stats import chi2_contingency
 
 work_types = stroke['work_type'].unique()
